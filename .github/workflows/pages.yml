@@ -1,0 +1,76 @@
+name: Web build → GitHub Pages
+
+# Every push to main that touches the shipped game rebuilds the
+# WebAssembly version and deploys it to GitHub Pages, so the latest crypt
+# is always a URL you can send to a friend.
+#
+# One-time setup: in the repository's Settings → Pages, set the source to
+# "GitHub Actions". After that this runs itself.
+#
+# The build is code/ch17/build_web.sh — the same script from Chapter 17.
+# Odin compiles the game to a wasm object; emcc links it against the
+# raylib web library inside the Odin distribution and bundles assets/ and
+# shaders/ into index.data.
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'code/ch17/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch: {}   # deploy on demand from the UI
+
+# Pages needs to mint an ID token and write to the pages environment.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; a newer push supersedes an in-flight one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: code/ch17
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pins the same Odin the book pins; the release archive bundles the
+      # raylib web library (vendor/raylib/wasm/libraylib.web.a).
+      - name: Install Odin
+        uses: laytan/setup-odin@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release: dev-2026-07
+
+      # emcc links the wasm; 6.0.2 matches the emscripten the book uses.
+      - name: Install Emscripten
+        uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: 6.0.2
+          actions-cache-folder: emsdk-cache
+
+      - name: Build web
+        shell: bash
+        run: ./build_web.sh
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: code/ch17/build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

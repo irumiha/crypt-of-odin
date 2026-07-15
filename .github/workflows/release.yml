@@ -1,0 +1,107 @@
+name: Release
+
+# Push a version tag and this ships the game. For each of Linux, macOS,
+# and Windows it builds an optimized native binary, zips it together with
+# the assets/ and shaders/ the game loads at runtime, and attaches the
+# three archives to a GitHub Release.
+#
+#   git tag v1.0.0
+#   git push origin v1.0.0
+#
+# The build itself is code/ch17/build_desktop.sh — the same script from
+# Chapter 17. This file only arranges to run it on three runners and
+# collect the results.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch: {}   # let you kick off a build by hand from the UI
+
+permissions:
+  contents: write   # create the release and upload the zips
+
+jobs:
+  build:
+    name: Build ${{ matrix.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            label: linux-x64
+            bin: crypt
+          - os: macos-latest
+            label: macos-arm64
+            bin: crypt
+          - os: windows-latest
+            label: windows-x64
+            bin: crypt.exe
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: code/ch17
+    steps:
+      - uses: actions/checkout@v4
+
+      # raylib's desktop build links against the system X11/GL/audio
+      # libraries on Linux (the binary pulls in libX11 and dlopens GL and
+      # ALSA at runtime). The macOS and Windows runners already ship what
+      # their raylib builds need.
+      - name: Install Linux graphics/audio dev libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev \
+            libxi-dev libgl1-mesa-dev libasound2-dev
+
+      # `release: dev-2026-07` pins the same Odin the book pins; the
+      # release archive bundles vendor:raylib, so there is nothing else to
+      # install. If Odin's tagging ever changes, adjust the value here (or
+      # use `release: nightly` for the latest nightly).
+      - name: Install Odin
+        uses: laytan/setup-odin@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release: dev-2026-07
+
+      - name: Build (optimized)
+        shell: bash
+        run: ./build_desktop.sh -o:speed
+
+      - name: Package (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: zip -r "crypt-of-odin-${{ matrix.label }}.zip" ${{ matrix.bin }} assets shaders
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Compress-Archive -Path ${{ matrix.bin }}, assets, shaders -DestinationPath "crypt-of-odin-${{ matrix.label }}.zip"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crypt-of-odin-${{ matrix.label }}
+          path: code/ch17/crypt-of-odin-${{ matrix.label }}.zip
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    # Only cut a release for a tag push, not for a manual build.
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish the three zips to a GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.zip
+          generate_release_notes: true

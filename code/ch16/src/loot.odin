@@ -26,7 +26,7 @@ Drop_Table :: struct {
 roll :: proc(t: Drop_Table, rng: rand.Generator) -> (kind: Pickup_Kind,
                                                      dropped: bool) {
 	// One roll: walk the cumulative weights, land somewhere. The
-	// second return value plays Nim's Option: false means the roll
+	// second return value is the comma-ok convention: false means the roll
 	// landed in the "nothing" band.
 	total := t.nothing
 	for e in t.entries {

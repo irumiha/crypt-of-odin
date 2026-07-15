@@ -21,9 +21,8 @@ Enemy_Stats :: struct {
 // so the @(rodata) table below can include it by name.
 IMP :: Enemy_Stats{"imp", "imp_idle_anim", "imp_run_anim", 1, 95, 140}
 
-// @(rodata) puts these tables in read-only memory: the Nim original
-// declared them const, and any accidental write should fault, not
-// silently rebalance the game.
+// @(rodata) puts these tables in read-only memory: any accidental
+// write should fault, not silently rebalance the game.
 @(rodata)
 ENEMY_KINDS := [5]Enemy_Stats{
 	{"goblin", "goblin_idle_anim", "goblin_run_anim", 2, 85, 150},

@@ -261,8 +261,8 @@ main :: proc() {
 		           tile_coord(feet_tile.y)) == .Stairs {
 			floor_num += 1
 			hp := world.healths[knight.idx].hp
-			// Nim's GC collected the old floor behind our back; here the
-			// cleanup is a visible pair of destroys before the rebuild.
+			// The old floor's arrays go back by hand: the cleanup is a
+			// visible pair of destroys before the rebuild.
 			destroy_dungeon(&crypt)
 			crypt = generate(run_seed + i64(floor_num) * 7919, floor_num)
 			destroy_world(&world)

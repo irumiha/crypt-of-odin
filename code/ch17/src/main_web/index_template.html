@@ -12,22 +12,20 @@
 	<style>
 		body {
 			margin: 0;
-			height: 100vh;
-			display: flex;
-			justify-content: center;
-			align-items: center;
 			overflow: hidden;
-			background: black;          /* the letterbox, page edition */
+			background: black;
 		}
 		canvas.game_canvas {
 			border: 0;
 			background-color: black;
-			image-rendering: pixelated; /* crisp texels when the page scales us */
-			/* !important so this outranks the inline style emscripten's
-			   GLFW shim writes during init; fit() below sets the
-			   variables. */
-			width: var(--game-w, 800px) !important;
-			height: var(--game-h, 450px) !important;
+			display: block;
+			/* The canvas is the window: it always covers the viewport,
+			   and the game letterboxes inside it with the same
+			   compute_viewport that letterboxes the desktop window.
+			   !important so this outranks the inline style emscripten's
+			   GLFW shim writes when the game calls SetWindowSize. */
+			width: 100vw !important;
+			height: 100vh !important;
 		}
 	</style>
 </head>
@@ -35,23 +33,6 @@
 	<canvas class="game_canvas" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1" onmousedown="event.target.focus()" onkeydown="event.preventDefault()"></canvas>
 	<script type="text/javascript" src="odin.js"></script>
 	<script>
-		// The same presentation rule the game applies inside its frame
-		// (Chapter 12), done in the page's terms: the canvas keeps its
-		// fixed 800x450 framebuffer, and CSS displays it at the largest
-		// INTEGER scale in device pixels that fits the browser window,
-		// centered. Fractional scales smear pixel art; integers keep
-		// texels square.
-		function fit() {
-			var dpr = window.devicePixelRatio || 1;
-			var s = Math.max(1, Math.floor(Math.min(
-				window.innerWidth*dpr/800, window.innerHeight*dpr/450)));
-			var root = document.documentElement.style;
-			root.setProperty('--game-w', (800*s/dpr) + 'px');
-			root.setProperty('--game-h', (450*s/dpr) + 'px');
-		}
-		window.addEventListener('resize', fit);
-		fit();
-
 		// Browsers keep audio muted until a user gesture, and raylib's
 		// audio glue (miniaudio) only unmutes on click/touch. Our title
 		// screen says "press SPACE", so keys must count too: a trusted
@@ -96,18 +77,24 @@
 				// main_update and main_end.
 				e.main_start();
 
+				// The game's framebuffer tracks the window, in device
+				// pixels: the game calls SetWindowSize with what we send,
+				// emscripten sizes the canvas backing store to match, and
+				// the CSS above keeps the element covering the viewport.
+				// Everything else — integer scaling, centering, the black
+				// bars — is the game's own Chapter 12 viewport, exactly
+				// as on desktop.
 				function send_resize() {
-					var canvas = document.getElementById('canvas');
-					e.web_window_size_changed(canvas.width, canvas.height);
+					var dpr = window.devicePixelRatio || 1;
+					e.web_window_size_changed(
+						Math.floor(window.innerWidth*dpr),
+						Math.floor(window.innerHeight*dpr));
 				}
 
 				window.addEventListener('resize', function(event) {
 					send_resize();
 				}, true);
 
-				// This can probably be done better: Ideally we'd feed the
-				// initial size to `main_start`. But there seems to be a
-				// race condition. `canvas` doesn't have it's correct size yet.
 				send_resize();
 
 				// Runs the "main loop".

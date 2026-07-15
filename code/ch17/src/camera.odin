@@ -30,7 +30,16 @@ compute_viewport :: proc(logical_w, logical_h: i32) -> Viewport {
 	// converted back to raylib's screen units for the final blit (on a
 	// HiDPI display those units are scaled by the OS factor, so doing
 	// the integer math in physical pixels keeps texels square).
-	dpi := rl.GetWindowScaleDPI().x
+	//
+	// On the web the canvas IS the framebuffer: raylib still reports
+	// the browser's devicePixelRatio as the window scale, but screen
+	// units and pixels are the same thing there, so the conversion
+	// divides by 1 — or a DPR-2 laptop gets a quarter-size game in
+	// the corner of the canvas.
+	dpi: f32 = 1
+	when ODIN_OS != .JS {
+		dpi = rl.GetWindowScaleDPI().x
+	}
 	phys_w := f32(rl.GetRenderWidth())
 	phys_h := f32(rl.GetRenderHeight())
 	s := max(1, math.floor(min(phys_w / f32(logical_w),

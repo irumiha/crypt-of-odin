@@ -33,6 +33,7 @@ by itself after a second):
 | `src/main_desktop/` | new | the desktop entry point: `set_working_directory` to the executable's dir, then the classic loop |
 | `src/main_web/` | new | the wasm entry points (`main_start`/`main_update` exported to the page), emscripten's allocator and logger wired into Odin's context (adapted from karl-zylinski/odin-raylib-web, MIT), and the HTML shell |
 | `build_desktop.sh`, `build_web.sh` | new (replace `build.sh`) | the web script links the raylib wasm library that ships inside Odin; no `ALLOW_MEMORY_GROWTH` — a growable heap is a resizable ArrayBuffer, and Chrome rejects views of those in `texImage2D`; fixed 64 MB instead |
+| `src/camera.odin` | changed | `compute_viewport`: on the web the canvas is the framebuffer, so the screen-unit conversion divides by 1, not by the browser's devicePixelRatio — or a DPR-2 display gets a quarter-size game in the corner of the canvas |
 | `src/shaders.odin` | unchanged | the GLSL 100 dialect and the compile-time switch have been waiting since Chapter 15 |
 | GitHub workflows | deferred | the Nim book shipped release/pages workflows here; the Odin equivalents are pending the prose pass |
 | everything else | unchanged | |

@@ -31,15 +31,11 @@ compute_viewport :: proc(logical_w, logical_h: i32) -> Viewport {
 	// HiDPI display those units are scaled by the OS factor, so doing
 	// the integer math in physical pixels keeps texels square).
 	//
-	// On the web the canvas IS the framebuffer: raylib still reports
-	// the browser's devicePixelRatio as the window scale, but screen
-	// units and pixels are the same thing there, so the conversion
-	// divides by 1 — or a DPR-2 laptop gets a quarter-size game in
-	// the corner of the canvas.
-	dpi: f32 = 1
-	when ODIN_OS != .JS {
-		dpi = rl.GetWindowScaleDPI().x
-	}
+	// This holds on the web untouched: there the scale is the
+	// browser's devicePixelRatio, raylib keeps screen units in CSS
+	// pixels, and the canvas backing store is the framebuffer —
+	// a HiDPI monitor by another name.
+	dpi := rl.GetWindowScaleDPI().x
 	phys_w := f32(rl.GetRenderWidth())
 	phys_h := f32(rl.GetRenderHeight())
 	s := max(1, math.floor(min(phys_w / f32(logical_w),

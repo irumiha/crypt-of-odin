@@ -297,7 +297,19 @@ draw_centered :: proc(text: cstring, y: i32, size: i32, color: rl.Color) {
 
 game_init :: proc() {
 	g.running = true
-	rl.SetConfigFlags({.WINDOW_HIGHDPI, .WINDOW_RESIZABLE})
+	when ODIN_OS == .JS {
+		// No HIGHDPI flag on the web. The shell already hands us the
+		// canvas in device pixels, so the flag could only add broken
+		// bookkeeping: raylib's web backend sets its HiDPI draw-scale
+		// matrix solely from a browser zoom-change event (so fresh
+		// loads never have it), and EndMode2D applies that matrix even
+		// inside render textures (so the HUD doubles when it fires).
+		// Without the flag, screen, render, canvas, and mouse all
+		// agree: one coordinate space, device pixels.
+		rl.SetConfigFlags({.WINDOW_RESIZABLE})
+	} else {
+		rl.SetConfigFlags({.WINDOW_HIGHDPI, .WINDOW_RESIZABLE})
+	}
 	rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Crypt of Odin")
 	rl.InitAudioDevice()
 	rl.SetExitKey(.KEY_NULL) // Esc pauses; it does not quit

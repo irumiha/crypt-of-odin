@@ -10,19 +10,24 @@
 	<meta name="viewport" content="width=device-width">
 
 	<style>
-		body { 
-			margin: 0px; 
-			overflow: hidden; 
-			background-color: black;
+		body {
+			margin: 0;
+			height: 100vh;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			overflow: hidden;
+			background: black;          /* the letterbox, page edition */
 		}
-		canvas.game_canvas { 
-			border: 0px none; 
+		canvas.game_canvas {
+			border: 0;
 			background-color: black;
-			padding-left: 0;
-			padding-right: 0;
-			margin-left: auto;
-			margin-right: auto;
-			display: block;
+			image-rendering: pixelated; /* crisp texels when the page scales us */
+			/* !important so this outranks the inline style emscripten's
+			   GLFW shim writes during init; fit() below sets the
+			   variables. */
+			width: var(--game-w, 800px) !important;
+			height: var(--game-h, 450px) !important;
 		}
 	</style>
 </head>
@@ -30,6 +35,35 @@
 	<canvas class="game_canvas" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1" onmousedown="event.target.focus()" onkeydown="event.preventDefault()"></canvas>
 	<script type="text/javascript" src="odin.js"></script>
 	<script>
+		// The same presentation rule the game applies inside its frame
+		// (Chapter 12), done in the page's terms: the canvas keeps its
+		// fixed 800x450 framebuffer, and CSS displays it at the largest
+		// INTEGER scale in device pixels that fits the browser window,
+		// centered. Fractional scales smear pixel art; integers keep
+		// texels square.
+		function fit() {
+			var dpr = window.devicePixelRatio || 1;
+			var s = Math.max(1, Math.floor(Math.min(
+				window.innerWidth*dpr/800, window.innerHeight*dpr/450)));
+			var root = document.documentElement.style;
+			root.setProperty('--game-w', (800*s/dpr) + 'px');
+			root.setProperty('--game-h', (450*s/dpr) + 'px');
+		}
+		window.addEventListener('resize', fit);
+		fit();
+
+		// Browsers keep audio muted until a user gesture, and raylib's
+		// audio glue (miniaudio) only unmutes on click/touch. Our title
+		// screen says "press SPACE", so keys must count too: a trusted
+		// keydown carries the same user-activation, and miniaudio leaves
+		// its unlock function on the window for exactly this poke.
+		document.addEventListener('keydown', function kick() {
+			if (window.miniaudio && miniaudio.unlock) {
+				miniaudio.unlock();
+				document.removeEventListener('keydown', kick);
+			}
+		});
+
 		var odinMemoryInterface = new odin.WasmMemoryInterface();
 		odinMemoryInterface.setIntSize(4);
 		var odinImports = odin.setupDefaultImports(odinMemoryInterface);
@@ -58,7 +92,7 @@
 				// Calls any procedure marked with @init
 				e._start();
 
-				// See source/main_web/main_web.odin for main_start,
+				// See src/main_web/main_web.odin for main_start,
 				// main_update and main_end.
 				e.main_start();
 

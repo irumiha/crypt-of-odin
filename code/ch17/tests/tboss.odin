@@ -128,6 +128,6 @@ inside_room_knows_the_interior_from_the_doorway :: proc(t: ^testing.T) {
 }
 
 @(test)
-the_crown_has_a_name_for_the_hover_ui :: proc(t: ^testing.T) {
-	testing.expect_value(t, crypt.label(.Crown), "the crown of Odin")
+the_ring_has_a_name_for_the_hover_ui :: proc(t: ^testing.T) {
+	testing.expect_value(t, crypt.label(.Ring), "Draupnir, Odin's ring")
 }

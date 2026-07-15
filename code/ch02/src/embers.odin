@@ -1,4 +1,4 @@
-// Golden embers drifting up around the title-screen crown.
+// Golden embers drifting up around the title-screen ring.
 //
 // The first homegrown file, and a miniature of how the whole game
 // will manage short-lived things: plain value structs in a dynamic

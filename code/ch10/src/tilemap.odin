@@ -157,7 +157,7 @@ tilemap_draw :: proc(m: Tilemap, atlas: ^Atlas, skin: Tile_Skin) {
 				                  {0, 0}, 0, tint)
 			case .Sealed:
 				// A locked door: the wall texture, dipped in gold. The
-				// crown's magic, or an art budget of zero, depending
+				// ring's magic, or an art budget of zero, depending
 				// who asks.
 				rl.DrawTexturePro(atlas.texture, skin.wall, dest,
 				                  {0, 0}, 0, SEAL_TINT)

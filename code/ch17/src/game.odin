@@ -1,5 +1,5 @@
 // Chapter 16: the boss and the run. Three floors down, the Warden
-// keeps the crown: the seals slam shut behind you, the fight has a
+// keeps the ring: the seals slam shut behind you, the fight has a
 // health bar and a phase flip, and winning is a fifth game phase the
 // compiler refused to let us forget.
 //
@@ -23,7 +23,7 @@ PLAYER_SPEED :: 170
 FLOOR_COUNT :: 3 // the run: two floors of dungeon, then the throne
 ATTACK_COOLDOWN_TIME :: 0.35
 BACKGROUND_COLOR :: rl.Color{24, 20, 37, 255}
-CROWN_COLOR :: rl.Color{232, 193, 112, 255}
+RING_COLOR :: rl.Color{232, 193, 112, 255}
 ATLAS_DIR :: "assets/0x72_DungeonTilesetII_v1.7/"
 
 // Build with -define:AUTOSTART=true and the menu presses SPACE by
@@ -119,15 +119,15 @@ spawn_boss :: proc(w: ^World, atlas: ^Atlas, pos: rl.Vector2) -> Entity {
 	return e
 }
 
-spawn_crown :: proc(w: ^World, pos: rl.Vector2) {
+spawn_ring :: proc(w: ^World, pos: rl.Vector2) {
 	// The win condition, as an entity: position, collider, pickup, and
-	// no sprite at all. The art pack has no crown, and it shouldn't:
+	// no sprite at all. The art pack has no ring, and it shouldn't:
 	// this one has been ours since Chapter 1, and the draw pass
 	// renders it with the same primitives the title screen uses.
 	e := spawn(w, {.Position, .Collider, .Pickup})
 	w.positions[e.idx] = pos
-	w.colliders[e.idx] = {size = {38, 26}, layer = .Pickup}
-	w.pickup_kinds[e.idx] = .Crown
+	w.colliders[e.idx] = {size = {30, 40}, layer = .Pickup}
+	w.pickup_kinds[e.idx] = .Ring
 }
 
 spawn_loot :: proc(w: ^World, atlas: ^Atlas, pos: rl.Vector2,
@@ -146,8 +146,8 @@ spawn_loot :: proc(w: ^World, atlas: ^Atlas, pos: rl.Vector2,
 		w.sprites[e.idx] = make_static_sprite(atlas, "flask_big_green", SCALE)
 	case .Key:
 		w.sprites[e.idx] = make_static_sprite(atlas, "flask_big_yellow", SCALE)
-	case .Crown:
-		panic("the crown spawns via spawn_crown")
+	case .Ring:
+		panic("the ring spawns via spawn_ring")
 	}
 	w.colliders[e.idx] = {
 		size  = {sprite_width(w.sprites[e.idx]),
@@ -268,20 +268,23 @@ descend :: proc(run: ^Run, atlas: ^Atlas) {
 	                            run.floor_num, carry_hp = hp)
 }
 
-draw_crown :: proc(cx, cy: i32, s: f32 = 1) {
-	// The Chapter 1 crown, drawn at any size: full for the title and
+draw_ring :: proc(cx, cy: i32, s: f32 = 1) {
+	// The Chapter 1 ring, drawn at any size: full for the title and
 	// victory screens, a third for the item lying in the throne room.
 	// Some programmer art is family.
-	left := f32(cx) - 60 * s
-	top := f32(cy) - 40 * s
-	rl.DrawRectangle(i32(left), i32(top + 50 * s), i32(120 * s),
-	                 i32(30 * s), CROWN_COLOR)
+	x, y := f32(cx), f32(cy)
+	rl.DrawRing({x, y}, 30 * s, 45 * s, 0, 360, 48, RING_COLOR)
 	for i in 0 ..< 3 {
-		px := left + f32(i) * 40 * s
-		rl.DrawTriangle({px, top + 50 * s}, {px + 40 * s, top + 50 * s},
-		                {px + 20 * s, top}, CROWN_COLOR)
+		drop := rl.Vector2{x + (f32(i) - 1) * 26 * s,
+		                   y + (62 + f32(i % 2) * 10) * s}
+		rl.DrawRing(drop, 4 * s, 7 * s, 0, 360, 24, RING_COLOR)
 	}
-	rl.DrawCircle(cx, cy + i32(25 * s), 9 * s, {165, 48, 48, 255})
+	gx, gy := x + 26 * s, y - 26 * s
+	rl.DrawTriangle({gx - 7 * s, gy}, {gx + 7 * s, gy}, {gx, gy - 14 * s},
+	                rl.RAYWHITE)
+	rl.DrawTriangle({gx + 7 * s, gy}, {gx - 7 * s, gy}, {gx, gy + 14 * s},
+	                rl.RAYWHITE)
+	rl.DrawCircle(cx, cy + i32(37 * s), 9 * s, {165, 48, 48, 255})
 }
 
 counted :: proc(n: int, word: string) -> string {
@@ -496,12 +499,12 @@ game_update :: proc() {
 		}
 		if boss_idx >= 0 && find_boss(&g.run.world) < 0 {
 			// The Warden fell: the long freeze, the seals dissolve,
-			// and the crown is suddenly just lying there.
+			// and the ring is suddenly just lying there.
 			g.hitstop = 0.25
 			add_trauma(&g.shake, 0.9)
-			emit_burst(&g.dust, boss_pos, 40, CROWN_COLOR, speed = 160,
+			emit_burst(&g.dust, boss_pos, 40, RING_COLOR, speed = 160,
 			           life_secs = 0.9)
-			spawn_crown(&g.run.world, boss_pos - {19, 8})
+			spawn_ring(&g.run.world, boss_pos - {15, 15})
 			unlock(&g.run.crypt)
 			play(&g.bank, .Unlock)
 		}
@@ -511,7 +514,7 @@ game_update :: proc() {
 		}
 		for kind in pickup_system(&g.run.world) {
 			switch kind {
-			case .Crown:
+			case .Ring:
 				g.phase = .Victory // the fifth arm the compiler demanded
 				play(&g.bank, .Victory)
 			case .Coin:
@@ -566,8 +569,8 @@ game_update :: proc() {
 	rl.ClearBackground(BACKGROUND_COLOR)
 	if g.phase == .Menu {
 		bob := i32(10 * math.sin(g.menu_time * math.PI))
-		draw_crown(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 40 + bob)
-		draw_centered("CRYPT OF ODIN", 300, 40, CROWN_COLOR)
+		draw_ring(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 40 + bob)
+		draw_centered("CRYPT OF ODIN", 300, 40, RING_COLOR)
 		draw_centered("press SPACE to descend", 350, 20, rl.LIGHTGRAY)
 		draw_centered("WASD moves, SPACE swings, ESC pauses, C for CRT",
 		              380, 10, rl.GRAY)
@@ -581,9 +584,9 @@ game_update :: proc() {
 		tilemap_draw(g.run.crypt.tilemap, &g.atlas, g.skin)
 		draw_system(&g.run.world, &g.atlas, g.fx)
 		for i in query(&g.run.world, {.Pickup, .Position}) {
-			if g.run.world.pickup_kinds[i] == .Crown {
-				draw_crown(i32(g.run.world.positions[i].x) + 19,
-				           i32(g.run.world.positions[i].y) + 12, 0.32)
+			if g.run.world.pickup_kinds[i] == .Ring {
+				draw_ring(i32(g.run.world.positions[i].x) + 15,
+				           i32(g.run.world.positions[i].y) + 15, 0.32)
 			}
 		}
 		particles_draw(g.dust)
@@ -620,7 +623,7 @@ game_update :: proc() {
 		} else if g.phase == .Game_Over {
 			rl.DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
 			                 {0, 0, 0, 190})
-			draw_centered("THE CRYPT KEEPS ITS CROWN", 160, 30, rl.RED)
+			draw_centered("THE CRYPT KEEPS THE RING", 160, 30, rl.RED)
 			draw_centered(fmt.ctprintf("floor %d  |  %s  |  %s",
 				g.run.floor_num, counted(g.run.kills, "kill"),
 				counted(g.run.coins, "coin")), 220, 20, rl.LIGHTGRAY)
@@ -628,8 +631,8 @@ game_update :: proc() {
 		} else if g.phase == .Victory {
 			rl.DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
 			                 {0, 0, 0, 190})
-			draw_crown(SCREEN_WIDTH / 2, 140)
-			draw_centered("THE CROWN RETURNS", 250, 30, CROWN_COLOR)
+			draw_ring(SCREEN_WIDTH / 2, 140)
+			draw_centered("DRAUPNIR RETURNS", 250, 30, RING_COLOR)
 			draw_centered(fmt.ctprintf("%d floors  |  %s  |  %s",
 				FLOOR_COUNT, counted(g.run.kills, "kill"),
 				counted(g.run.coins, "coin")), 300, 20, rl.LIGHTGRAY)

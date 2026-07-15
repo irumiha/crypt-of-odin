@@ -1,7 +1,7 @@
 # Chapter 2 — Odin for People Who Write Java for Money
 
 Game state at the end of this chapter: the Chapter 1 title scene with
-a field of golden embers rising behind the crown.
+a field of golden embers rising behind the ring.
 
 Build and run:
 

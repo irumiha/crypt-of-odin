@@ -14,7 +14,7 @@ import rl "vendor:raylib"
 SCREEN_WIDTH :: 800
 SCREEN_HEIGHT :: 450
 BACKGROUND_COLOR :: rl.Color{24, 20, 37, 255}
-CROWN_COLOR :: rl.Color{232, 193, 112, 255}
+RING_COLOR :: rl.Color{232, 193, 112, 255}
 ATLAS_DIR :: "assets/0x72_DungeonTilesetII_v1.7/"
 PLAYER_SPEED :: 170
 ATTACK_COOLDOWN_TIME :: 0.35
@@ -207,20 +207,18 @@ descend :: proc(run: ^Run, atlas: ^Atlas) {
 	                            run.floor_num, carry_hp = hp)
 }
 
-draw_crown :: proc(cx, cy: i32) {
-	// The Chapter 1 crown, back for the title screen. Some programmer
+draw_ring :: proc(cx, cy: i32) {
+	// The Chapter 1 ring, back for the title screen. Some programmer
 	// art is family.
-	left := cx - 60
-	top := cy - 40
-	rl.DrawRectangle(left, top + 50, 120, 30, CROWN_COLOR)
+	rl.DrawRing({f32(cx), f32(cy)}, 30, 45, 0, 360, 48, RING_COLOR)
 	for i in i32(0) ..< 3 {
-		px := left + i * 40
-		rl.DrawTriangle({f32(px), f32(top + 50)},
-		                {f32(px + 40), f32(top + 50)},
-		                {f32(px + 20), f32(top)},
-		                CROWN_COLOR)
+		drop := rl.Vector2{f32(cx + (i - 1) * 26), f32(cy + 62 + (i % 2) * 10)}
+		rl.DrawRing(drop, 4, 7, 0, 360, 24, RING_COLOR)
 	}
-	rl.DrawCircle(cx, cy + 25, 9, {165, 48, 48, 255})
+	gx, gy := f32(cx) + 26, f32(cy) - 26
+	rl.DrawTriangle({gx - 7, gy}, {gx + 7, gy}, {gx, gy - 14}, rl.RAYWHITE)
+	rl.DrawTriangle({gx + 7, gy}, {gx - 7, gy}, {gx, gy + 14}, rl.RAYWHITE)
+	rl.DrawCircle(cx, cy + 37, 9, {165, 48, 48, 255})
 }
 
 draw_centered :: proc(text: cstring, y, size: i32, color: rl.Color) {
@@ -418,8 +416,8 @@ main :: proc() {
 		rl.ClearBackground(BACKGROUND_COLOR)
 		if phase == .Menu {
 			bob := i32(10 * math.sin(menu_time * math.PI))
-			draw_crown(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 40 + bob)
-			draw_centered("CRYPT OF ODIN", 300, 40, CROWN_COLOR)
+			draw_ring(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 40 + bob)
+			draw_centered("CRYPT OF ODIN", 300, 40, RING_COLOR)
 			draw_centered("press SPACE to descend", 350, 20, rl.LIGHTGRAY)
 			draw_centered("WASD moves, SPACE swings, ESC pauses, C for CRT",
 			              380, 10, rl.GRAY)
@@ -457,7 +455,7 @@ main :: proc() {
 			} else if phase == .Game_Over {
 				rl.DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
 				                 {0, 0, 0, 190})
-				draw_centered("THE CRYPT KEEPS ITS CROWN", 160, 30, rl.RED)
+				draw_centered("THE CRYPT KEEPS THE RING", 160, 30, rl.RED)
 				draw_centered(fmt.ctprintf("floor %d  |  %d kills  |  %d coins",
 				                           run.floor_num, run.kills,
 				                           run.coins), 220, 20, rl.LIGHTGRAY)

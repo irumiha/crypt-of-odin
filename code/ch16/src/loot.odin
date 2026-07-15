@@ -50,7 +50,7 @@ label :: proc(kind: Pickup_Kind) -> string {
 	case .Heart:  return "heart"
 	case .Max_Hp: return "heart container"
 	case .Power:  return "sword power"
-	case .Crown:  return "the crown of Odin"
+	case .Ring:  return "Draupnir, Odin's ring"
 	}
 	return ""
 }
@@ -69,7 +69,7 @@ apply_pickup :: proc(w: ^World, player: Entity, power: ^i32,
 		w.healths[player.idx].hp += 1
 	case .Power:
 		power^ += 1
-	case .Coin, .Key, .Crown:
+	case .Coin, .Key, .Ring:
 		// they mean something to the run, not to the knight's body
 	}
 }

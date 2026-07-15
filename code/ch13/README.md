@@ -1,7 +1,7 @@
 # Chapter 13 — States and Sound
 
 Game state at the end of this chapter: a real game loop around the
-game. Title screen (the Chapter 1 crown, back home), pause on Esc, and
+game. Title screen (the Chapter 1 ring, back home), pause on Esc, and
 a game-over screen with the run's stats — death finally means
 something, and restarting constructs a fresh `Run` value. Every sound
 is synthesized from arithmetic at startup: nine effects and an

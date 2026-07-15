@@ -14,26 +14,26 @@ SCREEN_WIDTH :: 800
 SCREEN_HEIGHT :: 450
 // The palette of the crypt: near-black purple and old gold.
 BACKGROUND_COLOR :: rl.Color{24, 20, 37, 255}
-CROWN_COLOR :: rl.Color{232, 193, 112, 255}
+RING_COLOR :: rl.Color{232, 193, 112, 255}
 
-draw_crown :: proc(cx, cy: i32) {
-	// Draws a crown of plain shapes centered-ish on (cx, cy).
-	// Programmer art; the real crown is at the bottom of the crypt.
-	left := cx - 60
-	top := cy - 40
+draw_ring :: proc(cx, cy: i32) {
+	// Draws the ring as plain shapes centered on (cx, cy).
+	// Programmer art; the real ring is at the bottom of the crypt.
 	// The band.
-	rl.DrawRectangle(left, top + 50, 120, 30, CROWN_COLOR)
-	// Three prongs, rendered as triangles (counter-clockwise winding,
-	// or raylib culls them).
+	rl.DrawRing({f32(cx), f32(cy)}, 30, 45, 0, 360, 48, RING_COLOR)
+	// The drips: the legend says eight every ninth night; the art
+	// budget says three.
 	for i in i32(0) ..< 3 {
-		px := left + i * 40
-		rl.DrawTriangle({f32(px), f32(top + 50)},
-		                {f32(px + 40), f32(top + 50)},
-		                {f32(px + 20), f32(top)},
-		                CROWN_COLOR)
+		drop := rl.Vector2{f32(cx + (i - 1) * 26), f32(cy + 62 + (i % 2) * 10)}
+		rl.DrawRing(drop, 4, 7, 0, 360, 24, RING_COLOR)
 	}
-	// The jewel, set in the middle of the band.
-	rl.DrawCircle(cx, cy + 25, 9, {165, 48, 48, 255})
+	// The glint, two triangles (counter-clockwise winding, or raylib
+	// culls them).
+	gx, gy := f32(cx) + 26, f32(cy) - 26
+	rl.DrawTriangle({gx - 7, gy}, {gx + 7, gy}, {gx, gy - 14}, rl.RAYWHITE)
+	rl.DrawTriangle({gx + 7, gy}, {gx - 7, gy}, {gx, gy + 14}, rl.RAYWHITE)
+	// The jewel, set in the band.
+	rl.DrawCircle(cx, cy + 37, 9, {165, 48, 48, 255})
 }
 
 main :: proc() {
@@ -66,12 +66,12 @@ main :: proc() {
 		// --- Draw ---
 		rl.BeginDrawing()
 		rl.ClearBackground(BACKGROUND_COLOR)
-		embers_draw(ember_field[:]) // before the crown: embers rise behind it
-		draw_crown(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 40 + bob)
+		embers_draw(ember_field[:]) // before the ring: embers rise behind it
+		draw_ring(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 40 + bob)
 		title: cstring = "CRYPT OF ODIN"
 		title_width := rl.MeasureText(title, 40)
 		rl.DrawText(title, (SCREEN_WIDTH - title_width) / 2, 300, 40,
-		            CROWN_COLOR)
+		            RING_COLOR)
 		subtitle: cstring = "a roguelite, eventually"
 		sub_width := rl.MeasureText(subtitle, 20)
 		rl.DrawText(subtitle, (SCREEN_WIDTH - sub_width) / 2, 350, 20,

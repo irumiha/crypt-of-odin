@@ -67,7 +67,7 @@ Contact_Damage :: struct {
 }
 
 Pickup_Kind :: enum {
-	Coin, Key, Heart, Max_Hp, Power, Crown,
+	Coin, Key, Heart, Max_Hp, Power, Ring,
 }
 
 Boss_Phase :: enum {

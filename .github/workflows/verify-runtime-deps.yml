@@ -1,0 +1,85 @@
+name: Verify runtime dependencies
+
+# What does the shipped binary actually require to RUN, on each OS?
+#
+# The honest answer is not "does it launch on the runner" — a GitHub runner
+# is not a clean desktop; it carries Xcode, the VS Build Tools, and much more.
+# The authoritative answer is the binary's dynamic dependency list. If every
+# entry is an OS-provided library or framework, then any install of that OS
+# has them by definition, whatever else the runner happens to carry.
+#
+# So this builds the release binary the normal way and dumps its dependencies:
+# ldd on Linux, otool -L on macOS, dumpbin /dependents on Windows. Read the
+# logs; nothing is asserted. Run it from the Actions tab (workflow_dispatch).
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  deps:
+    name: ${{ matrix.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            label: linux-x64
+            bin: crypt
+          - os: macos-latest
+            label: macos-arm64
+            bin: crypt
+          - os: windows-latest
+            label: windows-x64
+            bin: crypt.exe
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: code/ch17
+    steps:
+      - uses: actions/checkout@v7
+
+      # Same Linux build deps as release.yml. These are BUILD-time; the point
+      # of the job is to show they are not RUN-time.
+      - name: Install Linux graphics/audio dev libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev \
+            libxi-dev libgl1-mesa-dev libasound2-dev
+
+      - name: Install Odin
+        uses: laytan/setup-odin@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release: dev-2026-07
+
+      - name: Build (optimized)
+        shell: bash
+        run: ./build_desktop.sh -o:speed
+
+      - name: Dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          echo "== ldd ${{ matrix.bin }} =="
+          ldd ${{ matrix.bin }} || true
+          echo
+          echo "== dlopened at runtime (not in ldd): GL driver, ALSA/Pulse =="
+          strings ${{ matrix.bin }} | grep -iE 'libGL\.so|libasound|libpulse|libEGL' | sort -u || true
+
+      - name: Dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          echo "== otool -L ${{ matrix.bin }} =="
+          otool -L ${{ matrix.bin }}
+
+      - name: Dependencies (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vs = & $vswhere -latest -property installationPath
+          $dumpbin = Get-ChildItem "$vs\VC\Tools\MSVC\*\bin\Hostx64\x64\dumpbin.exe" |
+                     Select-Object -First 1 -ExpandProperty FullName
+          Write-Host "== dumpbin /dependents ${{ matrix.bin }} =="
+          & $dumpbin /dependents ${{ matrix.bin }}

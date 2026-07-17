@@ -75,6 +75,17 @@ jobs:
         shell: bash
         run: zip -r "crypt-of-odin-${{ matrix.label }}.zip" ${{ matrix.bin }} assets shaders
 
+      # TRIAGE NOTE. If a Windows player reports the game won't start with a
+      # "VCRUNTIME140.dll was not found" (or similar missing-DLL) error, that
+      # is the cause: the .exe dynamically links the Visual C++ runtime, which
+      # a truly clean Windows install can lack (it is on virtually every real
+      # machine, though). We do NOT bundle vcruntime140.dll in the zip, and we
+      # CANNOT static-link it away: Odin's prebuilt vendor:raylib.lib is built
+      # against the dynamic CRT, so forcing /MT fails to link with
+      # "unresolved external symbol __imp_realloc" and friends (verified July
+      # 2026). Fix for the player: install "Microsoft Visual C++ Redistributable".
+      # Fix for us, if reports pile up: copy vcruntime140.dll beside the .exe
+      # here, or rebuild raylib from source with /MT (a much bigger commitment).
       - name: Package (Windows)
         if: runner.os == 'Windows'
         shell: pwsh

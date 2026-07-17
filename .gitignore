@@ -3,3 +3,8 @@ crypt
 crypt.exe
 tour
 build/
+
+# Editor droppings. Readers clone this repo and open it in whatever they
+# like; none of that belongs in it. A stray .idea/ turned up in the Nim
+# repo, which is how this got noticed.
+.idea/

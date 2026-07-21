@@ -14,7 +14,6 @@ SCREEN_HEIGHT :: 450
 SCALE :: 2 // 16px art, 32px on screen
 TILE_SIZE :: 16 * SCALE
 BACKGROUND_COLOR :: rl.Color{24, 20, 37, 255}
-ATLAS_DIR :: "assets/0x72_DungeonTilesetII_v1.7/"
 // Every name here must exist in the atlas as <name>_idle_anim; a bad
 // one fails loudly at spawn ("ice_zombie" taught us that; the pack
 // names its animation ice_zombie_anim, with no idle variant).
@@ -57,8 +56,7 @@ main :: proc() {
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(60)
 
-	atlas := load_atlas(ATLAS_DIR + "0x72_DungeonTilesetII_v1.7.png",
-	                    ATLAS_DIR + "tile_list_v1.7")
+	atlas := build_atlas(ART)
 	defer destroy_atlas(&atlas)
 
 	// The floor: one variant per cell, rolled once at startup (Chapter 3).
@@ -69,7 +67,7 @@ main :: proc() {
 	for _ in 0 ..< COLS * ROWS {
 		name := "floor_1"
 		if rand.float32() >= 0.9 {
-			name = fmt.tprintf("floor_%d", 2 + rand.int_max(7))
+			name = fmt.tprintf("floor_%d", 2 + rand.int_max(3))
 		}
 		append(&floor_tiles, atlas_rect(&atlas, name))
 	}
@@ -83,7 +81,7 @@ main :: proc() {
 	world.sprites[knight.idx] = make_anim_sprite(&atlas,
 	                                             "knight_m_idle_anim", SCALE)
 	world.positions[knight.idx] = {(SCREEN_WIDTH - 16 * SCALE) / 2,
-	                               (SCREEN_HEIGHT - 28 * SCALE) / 2}
+	                               (SCREEN_HEIGHT - 16 * SCALE) / 2}
 
 	for _ in 0 ..< 10 {
 		spawn_critter(&world, &atlas)

@@ -27,23 +27,25 @@ Tile_Kind :: enum {
 	Void, Floor, Wall, Sealed, Stairs,
 }
 
+FLOOR_VARIANTS :: 4
+
 Tilemap :: struct {
 	width, height:  i32, // in tiles
 	tiles:          [dynamic]Tile_Kind, // row-major, width*height entries
-	floor_variants: [dynamic]i32, // 1..8, rolled once per cell
+	floor_variants: [dynamic]i32, // 1..FLOOR_VARIANTS, rolled once per cell
 }
 
 Tile_Skin :: struct {
 	// The map's looks: which atlas regions the tile kinds draw with.
 	// Kept apart from Tilemap so the world data stays GPU-free.
-	floors: [9]rl.Rectangle, // 1..8 used; slot 0 sits empty
+	floors: [FLOOR_VARIANTS + 1]rl.Rectangle, // 1..FLOOR_VARIANTS used; slot 0 sits empty
 	wall:   rl.Rectangle,
 	stairs: rl.Rectangle,
 }
 
 roll_floor_variant :: proc() -> i32 {
 	// Weighted toward the plain tile so cracks read as wear.
-	return 1 if rand.float32() < 0.9 else 2 + rand.int31_max(7)
+	return 1 if rand.float32() < 0.9 else 2 + rand.int31_max(FLOOR_VARIANTS - 1)
 }
 
 init_tilemap :: proc(width, height: i32) -> (m: Tilemap) {
@@ -100,7 +102,7 @@ destroy_tilemap :: proc(m: ^Tilemap) {
 
 make_skin :: proc(atlas: ^Atlas) -> (skin: Tile_Skin) {
 	// Resolves the tile art once, at load time.
-	for i in 1 ..= 8 {
+	for i in 1 ..= FLOOR_VARIANTS {
 		skin.floors[i] = atlas_rect(atlas, fmt.tprintf("floor_%d", i))
 	}
 	skin.wall = atlas_rect(atlas, "wall_mid")

@@ -24,7 +24,9 @@ Tests:
 | `src/systems.odin` | changed | + `ai_system` (wander/chase with slack), + `health_system`, + `damage_system` (contacts → hp/i-frames/stun/knockback), + `death_system` (returns where things fell; GPU-free); input waits while stunned |
 | `src/input.odin` | changed | `.Attack` action (Space/J) and `was_pressed` |
 | `src/sprites.odin` | changed | `make_static_sprite` for one-frame sprites (sword, skull), sharing the atlas cache via `atlas_static` |
-| `src/resources.odin` | changed | `atlas_static`: cached one-frame lists (Nim allocated per sprite and let the GC own it; here the atlas owns all frame lists) |
-| `src/main.odin` | changed | enemy archetype table, `spawn_enemy` bundles, `swing_sword`, death decals, merciful respawn, HUD hp/kills |
+| `src/art.odin` | changed | + `weapon_knight_sword`, + `skull` |
+| `src/resources.odin` | changed | `atlas_static`: cached one-frame lists (Nim allocated per sprite and let the GC own it; here the atlas owns all frame lists); atlas built from `art.odin` (`build_atlas`) instead of loaded from a PNG pack + index file |
+| `src/tilemap.odin` | changed | floor variants `FLOOR_VARIANTS :: 4` (was 8, matching the typed atlas's 4 floor strips) |
+| `src/main.odin` | changed | enemy archetype table (`Enemy_Stats.scale`, 2 for the ogre), `spawn_enemy` bundles, `swing_sword`, death decals, merciful respawn, HUD hp/kills |
 | `src/debug.odin` | changed | panel moved below the taller HUD |
 | everything else | unchanged | |

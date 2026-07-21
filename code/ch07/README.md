@@ -21,5 +21,5 @@ Build and run:
 | `src/camera.odin` | unchanged | |
 | `src/sprites.odin` | unchanged | |
 | `src/input.odin` | unchanged | |
+| `src/art.odin` | unchanged | |
 | `src/resources.odin` | unchanged | |
-| `assets/` | unchanged | |

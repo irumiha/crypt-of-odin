@@ -56,7 +56,7 @@ parse_map :: proc(atlas: ^Atlas, ascii: string) -> (m: Tilemap) {
 			append(&m.tiles, kind)
 			name := "floor_1"
 			if rand.float32() >= 0.9 {
-				name = fmt.tprintf("floor_%d", 2 + rand.int_max(7))
+				name = fmt.tprintf("floor_%d", 2 + rand.int_max(3))
 			}
 			append(&m.floor_rects, atlas_rect(atlas, name))
 		}

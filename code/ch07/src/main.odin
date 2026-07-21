@@ -13,7 +13,6 @@ import rl "vendor:raylib"
 SCREEN_WIDTH :: 800
 SCREEN_HEIGHT :: 450
 BACKGROUND_COLOR :: rl.Color{24, 20, 37, 255}
-ATLAS_DIR :: "assets/0x72_DungeonTilesetII_v1.7/"
 PLAYER_SPEED :: 170 // px/s; the crypt is large and life is short
 
 // The crypt, drawn in the finest of level editors. Three rooms:
@@ -96,8 +95,7 @@ main :: proc() {
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(60)
 
-	atlas := load_atlas(ATLAS_DIR + "0x72_DungeonTilesetII_v1.7.png",
-	                    ATLAS_DIR + "tile_list_v1.7")
+	atlas := build_atlas(ART)
 	defer destroy_atlas(&atlas)
 
 	m := parse_map(&atlas, CRYPT_MAP)

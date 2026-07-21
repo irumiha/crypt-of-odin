@@ -112,3 +112,63 @@ atlas_static :: proc(atlas: ^Atlas, name: string) -> []rl.Rectangle {
 	atlas.anims[strings.clone(name)] = frames
 	return frames
 }
+
+palette_color :: proc(ch: u8) -> rl.Color {
+	// The single source of color truth. An unknown character is a
+	// typo in a grid; stop and say which one.
+	for entry in PALETTE {
+		if entry.ch == ch do return entry.color
+	}
+	fmt.assertf(false, "no palette entry for %q", rune(ch))
+	return {}
+}
+
+render_art :: proc(strips: []Art_Strip) -> rl.Image {
+	// Grids to pixels, one strip per row of the sheet. Pure CPU
+	// work (raylib image procs), so the headless tests can see it.
+	max_w := 1
+	for strip in strips {
+		max_w = max(max_w, strip.frames)
+	}
+	img := rl.GenImageColor(i32(max_w * SPRITE_SIZE),
+	                        i32(len(strips) * SPRITE_SIZE), rl.BLANK)
+	for strip, i in strips {
+		fmt.assertf(strip.frames >= 1, "bad frame count: %s", strip.name)
+		for row, y in strip.rows {
+			fmt.assertf(len(row) == strip.frames * SPRITE_SIZE,
+			            "row %d of %q is %d chars, want %d",
+			            y, strip.name, len(row),
+			            strip.frames * SPRITE_SIZE)
+			for x in 0 ..< len(row) {
+				rl.ImageDrawPixel(&img, i32(x),
+				                  i32(i * SPRITE_SIZE + y),
+				                  palette_color(row[x]))
+			}
+		}
+	}
+	return img
+}
+
+build_atlas :: proc(strips: []Art_Strip) -> (atlas: Atlas) {
+	// The typed-art replacement for load_atlas: render the strips,
+	// upload once, and register every frame under the same names
+	// the rest of the game already asks for.
+	img := render_art(strips)
+	defer rl.UnloadImage(img)
+	atlas.texture = rl.LoadTextureFromImage(img)
+	assert(rl.IsTextureValid(atlas.texture), "atlas upload failed")
+	for strip, i in strips {
+		y := f32(i * SPRITE_SIZE)
+		if strip.frames == 1 {
+			atlas.rects[strings.clone(strip.name)] =
+				rl.Rectangle{0, y, SPRITE_SIZE, SPRITE_SIZE}
+		} else {
+			for f in 0 ..< strip.frames {
+				atlas.rects[fmt.aprintf("%s_f%d", strip.name, f)] =
+					rl.Rectangle{f32(f * SPRITE_SIZE), y,
+					             SPRITE_SIZE, SPRITE_SIZE}
+			}
+		}
+	}
+	return
+}

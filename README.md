@@ -16,14 +16,13 @@ chapter: build it, run it, diff it against its neighbors.
     ./build.sh        # odin build src -out:crypt
     ./crypt
 
-Run from the chapter directory: the game loads `assets/` relative to
-where you start it.
+Run from the chapter directory.
 
 ## Layout
 
 - `code/chNN/src/` — the game (package `crypt`)
-- `code/chNN/assets/` — sprite sheets generated at load time from typed-in
-  pixel-art string grids (no PNG pack required)
+- `code/chNN/src/art.odin` — sprite sheets: typed-in pixel-art string grids,
+  parsed and rendered at load time (no PNG pack required)
 - from ch08: `code/chNN/tests/` — headless tests (`odin test tests`)
 - from ch15: `code/chNN/shaders/`
 - ch17 adds the web build (`build_web.sh`)

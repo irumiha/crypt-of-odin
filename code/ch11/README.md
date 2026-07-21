@@ -21,5 +21,8 @@ Tests:
 | `src/loot.odin` | new | `Drop_Table`/`Drop_Entry`, cumulative-weight `roll` (explicit `rand.Generator`; comma-ok plays Nim's `Option`), `apply_pickup` effects, the `ENEMY_DROPS` table |
 | `tests/tloot.odin` | new | drop distribution (shape, not decimals), same-dice determinism, heal clamp, flask effects |
 | `src/ecs.odin` | changed | `Pickup_Kind` grew `.Heart`, `.Max_Hp`, `.Power` |
-| `src/main.odin` | changed | `spawn_coin` faucet removed; `spawn_loot` per kind; death rolls the table (its own dice, seeded off the run seed); `swing_sword` takes a damage stat; `power` on the HUD |
+| `src/main.odin` | changed | `spawn_coin` faucet removed; `spawn_loot` per kind; death rolls the table (its own dice, seeded off the run seed); `swing_sword` takes a damage stat; `power` on the HUD; `Enemy_Stats.scale` (2 for the ogre) |
+| `src/tilemap.odin` | changed | floor variants `FLOOR_VARIANTS :: 4` (was 8, matching the typed atlas's 4 floor strips) |
+| `src/art.odin` | changed | + `flask_big_blue`, + `flask_big_green`, + `ui_heart_full` |
+| `src/resources.odin` | changed | atlas built from `art.odin` (`build_atlas`) instead of loaded from a PNG pack + index file |
 | everything else | unchanged | |

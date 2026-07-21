@@ -25,5 +25,7 @@ Tests:
 | `src/camera.odin` | changed | + `Shake` (trauma-based, squared response, 6 px max) |
 | `src/sprites.odin` | changed | animated draw takes a tint |
 | `src/systems.odin` | changed | `draw_system`: red hurt-flash while stunned, player blinks at 10 Hz during i-frames |
-| `src/main.odin` | changed | hitstop (sim `dt` zeroed briefly on hits), shake wiring, bursts on hits/deaths, shaken camera copy at draw time; the frame delta is capped at 50 ms so a backgrounded window can't hand knockback a whole-tile timestep |
+| `src/main.odin` | changed | hitstop (sim `dt` zeroed briefly on hits), shake wiring, bursts on hits/deaths, shaken camera copy at draw time; the frame delta is capped at 50 ms so a backgrounded window can't hand knockback a whole-tile timestep; `Enemy_Stats.scale` (2 for the ogre) |
+| `src/tilemap.odin` | changed | floor variants `FLOOR_VARIANTS :: 4` (was 8, matching the typed atlas's 4 floor strips) |
+| `src/resources.odin` | changed | atlas built from `art.odin` (`build_atlas`) instead of loaded from a PNG pack + index file |
 | everything else | unchanged | |

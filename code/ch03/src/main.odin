@@ -1,6 +1,7 @@
 // Chapter 3: real pixel art. A tiled crypt floor, a few props, and a
-// knight idling in the middle, all drawn from one texture atlas at 2x
-// scale (raylib's default point filtering keeps the pixels crisp).
+// knight idling in the middle, all drawn from one texture atlas — built
+// at load time from the typed strips in art.odin — at 2x scale
+// (raylib's default point filtering keeps the pixels crisp).
 
 package crypt
 
@@ -13,7 +14,6 @@ SCREEN_HEIGHT :: 450
 SCALE :: 2 // 16px art, 32px on screen
 TILE_SIZE :: 16 * SCALE
 BACKGROUND_COLOR :: rl.Color{24, 20, 37, 255}
-ATLAS_DIR :: "assets/0x72_DungeonTilesetII_v1.7/"
 
 main :: proc() {
 	rl.SetConfigFlags({.WINDOW_HIGHDPI})
@@ -21,8 +21,7 @@ main :: proc() {
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(60)
 
-	atlas := load_atlas(ATLAS_DIR + "0x72_DungeonTilesetII_v1.7.png",
-	                    ATLAS_DIR + "tile_list_v1.7")
+	atlas := build_atlas(ART)
 	defer destroy_atlas(&atlas) // runs before CloseWindow: GPU still up
 
 	// The floor: one variant per cell, rolled once at startup and stored
@@ -36,15 +35,15 @@ main :: proc() {
 	for _ in 0 ..< COLS * ROWS {
 		name := "floor_1"
 		if rand.float32() >= 0.9 {
-			name = fmt.tprintf("floor_%d", 2 + rand.int_max(7))
+			name = fmt.tprintf("floor_%d", 2 + rand.int_max(3))
 		}
 		append(&floor_tiles, atlas_rect(&atlas, name))
 	}
 
 	knight := make_anim_sprite(&atlas, "knight_m_idle_anim")
-	knight_pos := rl.Vector2{ // centered by his 16x28 sprite size
+	knight_pos := rl.Vector2{
 		(SCREEN_WIDTH - 16 * SCALE) / 2,
-		(SCREEN_HEIGHT - 28 * SCALE) / 2,
+		(SCREEN_HEIGHT - 16 * SCALE) / 2,
 	}
 	coin := make_anim_sprite(&atlas, "coin_anim")
 

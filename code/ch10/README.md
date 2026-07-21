@@ -22,12 +22,14 @@ Tests:
 |------|--------|-------|
 | `src/dungeon.odin` | new | the generator: seeded room walk (a local `rand.Generator` — nothing else can disturb the dice), BFS depths, doorway carving, seal/unlock, room lookup helpers (floor division in `room_at`, same reason as collision's `tile_coord`) |
 | `tests/tdungeon.odin` | new | determinism, connectivity, distinct special rooms, seal contract, exactly one staircase |
-| `src/tilemap.odin` | changed | tile kinds added: `.Sealed` (gold-tinted wall, solid until unsealed) and `.Stairs`; `init_tilemap` + `set_tile` for generators |
+| `src/tilemap.odin` | changed | tile kinds added: `.Sealed` (gold-tinted wall, solid until unsealed) and `.Stairs`; `init_tilemap` + `set_tile` for generators; floor variants `FLOOR_VARIANTS :: 4` (was 8, matching the typed atlas's 4 floor strips) |
 | `src/collision.odin` | changed | sealed tiles are solid |
 | `src/ecs.odin` | changed | `Pickup_Kind` (coin/key) component added |
 | `src/systems.odin` | changed | `pickup_system` returns what was picked up, not a count; `ai_system` takes the dungeon and scopes aggro to the player's room (distance checks don't respect walls, so enemies used to pile up in doorways) |
 | `src/camera.odin` | changed | `camera_follow` takes a pan speed (room transitions use a slower one) |
-| `src/main.odin` | changed | generated floors replace the hand-drawn map; room-locked camera targeting; key/seal flow; stairs regenerate the next floor (a visible destroy/rebuild pair — Nim's GC did this behind the curtain) |
+| `src/main.odin` | changed | generated floors replace the hand-drawn map; room-locked camera targeting; key/seal flow; stairs regenerate the next floor (a visible destroy/rebuild pair — Nim's GC did this behind the curtain); `Enemy_Stats.scale` (2 for the ogre) |
 | `tests/tworld.odin` | changed | pickup test follows `pickup_system`'s new return type |
 | `tests/tcombat.odin` | changed | ai suite runs in a generated crypt; new test: a wall blocks aggro |
+| `src/art.odin` | changed | + `floor_stairs`, + `flask_big_yellow` |
+| `src/resources.odin` | changed | atlas built from `art.odin` (`build_atlas`) instead of loaded from a PNG pack + index file |
 | everything else | unchanged | |

@@ -14,7 +14,6 @@ import rl "vendor:raylib"
 SCREEN_WIDTH :: 800
 SCREEN_HEIGHT :: 450
 BACKGROUND_COLOR :: rl.Color{24, 20, 37, 255}
-ATLAS_DIR :: "assets/0x72_DungeonTilesetII_v1.7/"
 PLAYER_SPEED :: 170
 ATTACK_COOLDOWN_TIME :: 0.35
 
@@ -24,6 +23,7 @@ Enemy_Stats :: struct {
 	hp:        i32,
 	speed:     f32,
 	aggro:     f32,
+	scale:     f32, // multiplies SCALE at spawn; 2 for the ogre
 }
 
 // Every animation here must exist in the atlas; a bad name fails
@@ -32,11 +32,11 @@ Enemy_Stats :: struct {
 // strings in a constant table need nobody.
 @(rodata)
 ENEMY_KINDS := [?]Enemy_Stats{
-	{"goblin_idle_anim", "goblin_run_anim", 2, 85, 150},
-	{"skelet_idle_anim", "skelet_run_anim", 2, 70, 170},
-	{"imp_idle_anim", "imp_run_anim", 1, 95, 140},
-	{"chort_idle_anim", "chort_run_anim", 3, 80, 160},
-	{"ogre_idle_anim", "ogre_run_anim", 5, 45, 190},
+	{"goblin_idle_anim", "goblin_run_anim", 2, 85, 150, 1},
+	{"skelet_idle_anim", "skelet_run_anim", 2, 70, 170, 1},
+	{"imp_idle_anim", "imp_run_anim", 1, 95, 140, 1},
+	{"chort_idle_anim", "chort_run_anim", 3, 80, 160, 1},
+	{"ogre_idle_anim", "ogre_run_anim", 5, 45, 190, 2},
 }
 
 spawn_enemy :: proc(w: ^World, atlas: ^Atlas, pos: rl.Vector2) -> Entity {
@@ -46,7 +46,7 @@ spawn_enemy :: proc(w: ^World, atlas: ^Atlas, pos: rl.Vector2) -> Entity {
 	e := spawn(w, {.Position, .Velocity, .Sprite, .Actor,
 	               .Collider, .Bounce, .Health, .Ai,
 	               .Contact_Damage})
-	w.sprites[e.idx] = make_anim_sprite(atlas, stats.idle_anim, SCALE)
+	w.sprites[e.idx] = make_anim_sprite(atlas, stats.idle_anim, SCALE * stats.scale)
 	w.actors[e.idx] = {idle_anim = stats.idle_anim,
 	                   run_anim  = stats.run_anim}
 	w.colliders[e.idx] = feet_collider(w.sprites[e.idx], .Enemy,
@@ -143,8 +143,7 @@ main :: proc() {
 	defer rl.CloseWindow()
 	rl.SetTargetFPS(60)
 
-	atlas := load_atlas(ATLAS_DIR + "0x72_DungeonTilesetII_v1.7.png",
-	                    ATLAS_DIR + "tile_list_v1.7")
+	atlas := build_atlas(ART)
 	defer destroy_atlas(&atlas)
 	skin := make_skin(&atlas)
 

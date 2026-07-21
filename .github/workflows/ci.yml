@@ -1,0 +1,42 @@
+name: Build all chapters
+
+# Every chapter snapshot must always compile, and the tested ones must
+# pass. This is the promise behind "type it in and it runs".
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'code/**', '.github/workflows/ci.yml' ]
+  pull_request:
+    paths: [ 'code/**' ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: raylib system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev \
+            libxi-dev libgl1-mesa-dev libasound2-dev
+      - name: Install Odin
+        uses: laytan/setup-odin@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release: dev-2026-07
+      - name: Build every chapter, test where tests exist
+        run: |
+          set -e
+          for ch in code/ch*/; do
+            echo "=== $ch ==="
+            if [ -x "$ch/build_desktop.sh" ]; then
+              (cd "$ch" && ./build_desktop.sh)
+            else
+              (cd "$ch" && ./build.sh)
+            fi
+            if [ -d "$ch/tests" ]; then
+              (cd "$ch" && odin test tests)
+            fi
+          done

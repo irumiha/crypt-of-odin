@@ -22,8 +22,8 @@ where you start it.
 ## Layout
 
 - `code/chNN/src/` — the game (package `crypt`)
-- `code/chNN/assets/` — the art pack (0x72 Dungeon Tileset II v1.7,
-  CC0, by 0x72: https://0x72.itch.io/dungeontileset-ii)
+- `code/chNN/assets/` — sprite sheets generated at load time from typed-in
+  pixel-art string grids (no PNG pack required)
 - from ch08: `code/chNN/tests/` — headless tests (`odin test tests`)
 - from ch15: `code/chNN/shaders/`
 - ch17 adds the web build (`build_web.sh`)

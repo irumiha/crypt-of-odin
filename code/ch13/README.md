@@ -21,6 +21,8 @@ Tests:
 |------|--------|-------|
 | `src/audio.odin` | new | the synthesizer: `tone` (shape/slide/envelope), `mix`, hand-built WAV headers, sfx bank, streamed music loop; `destroy_audio_bank` |
 | `tests/taudio.odin` | new | synth invariants: length, envelope, determinism, saturating mix, WAV header |
-| `src/main.odin` | changed | `Game_Phase` state machine (menu/playing/paused/game over), `Run` struct (restart = new value, plus `destroy_run` — the one cleanup Nim's GC hid), sfx wiring, `SetExitKey` so Esc pauses instead of quitting |
+| `src/main.odin` | changed | `Game_Phase` state machine (menu/playing/paused/game over), `Run` struct (restart = new value, plus `destroy_run` — the one cleanup Nim's GC hid), sfx wiring, `SetExitKey` so Esc pauses instead of quitting; `Enemy_Stats.scale` (2 for the ogre) |
 | `src/input.odin` | changed | `.Pause` action (Esc, P) |
+| `src/tilemap.odin` | changed | floor variants `FLOOR_VARIANTS :: 4` (was 8, matching the typed atlas's 4 floor strips) |
+| `src/resources.odin` | changed | atlas built from `art.odin` (`build_atlas`) instead of loaded from a PNG pack + index file |
 | everything else | unchanged | |

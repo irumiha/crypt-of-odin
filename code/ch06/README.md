@@ -21,5 +21,6 @@ Build and run:
 | `src/systems.odin` | unchanged | (`bounce_system` already took bounds as a parameter; it now receives the map's pixel size) |
 | `src/sprites.odin` | unchanged | |
 | `src/input.odin` | unchanged | |
-| `src/resources.odin` | unchanged | |
-| `assets/` | unchanged | |
+| `src/art.odin` | new | the game's art, typed in — the subset of ch17's strips this chapter's code actually asks for |
+| `src/resources.odin` | changed | atlas built from `art.odin` (`build_atlas`) instead of loaded from a PNG pack + index file |
+| `assets/` | removed | the atlas is typed art now, not a pack on disk |

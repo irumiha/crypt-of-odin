@@ -18,5 +18,6 @@ Build and run:
 | `src/systems.odin` | changed | + `player_input_system`, + `actor_anim_system`; `bounce_system` now also clamps positions into bounds |
 | `src/sprites.odin` | changed | `Anim_Sprite` tracks its animation name (`set_anim` no-ops when unchanged) and gains `flip_x` (negative source width flip) |
 | `src/main.odin` | changed | knight spawns with Velocity/Actor/Player; critters get `Actor`; the critter table spells out animation names (runtime strings need an owner; constants need nobody); schedule grows two systems |
-| `src/resources.odin` | unchanged | |
-| `assets/` | unchanged | |
+| `src/art.odin` | new | the game's art, typed in — the subset of ch17's strips this chapter's code actually asks for |
+| `src/resources.odin` | changed | atlas built from `art.odin` (`build_atlas`) instead of loaded from a PNG pack + index file |
+| `assets/` | removed | the atlas is typed art now, not a pack on disk |

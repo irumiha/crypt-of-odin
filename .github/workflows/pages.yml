@@ -9,8 +9,9 @@ name: Web build → GitHub Pages
 #
 # The build is code/ch17/build_web.sh — the same script from Chapter 17.
 # Odin compiles the game to a wasm object; emcc links it against the
-# raylib web library inside the Odin distribution and bundles assets/ and
-# shaders/ into index.data.
+# raylib web library inside the Odin distribution and bundles shaders/
+# into index.data. (The art is typed in and built at load time — no
+# asset pack to bundle.)
 
 on:
   push:

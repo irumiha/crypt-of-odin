@@ -2,8 +2,9 @@ name: Release
 
 # Push a version tag and this ships the game. For each of Linux, macOS,
 # and Windows it builds an optimized native binary, zips it together with
-# the assets/ and shaders/ the game loads at runtime, and attaches the
-# three archives to a GitHub Release.
+# the shaders/ the game loads at runtime, and attaches the three archives
+# to a GitHub Release. (The art is typed in and built at load time —
+# there is no asset pack to bundle.)
 #
 #   git tag v1.0.0
 #   git push origin v1.0.0
@@ -73,7 +74,7 @@ jobs:
       - name: Package (Linux/macOS)
         if: runner.os != 'Windows'
         shell: bash
-        run: zip -r "crypt-of-odin-${{ matrix.label }}.zip" ${{ matrix.bin }} assets shaders
+        run: zip -r "crypt-of-odin-${{ matrix.label }}.zip" ${{ matrix.bin }} shaders
 
       # TRIAGE NOTE. If a Windows player reports the game won't start with a
       # "VCRUNTIME140.dll was not found" (or similar missing-DLL) error, that
@@ -89,7 +90,7 @@ jobs:
       - name: Package (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: Compress-Archive -Path ${{ matrix.bin }}, assets, shaders -DestinationPath "crypt-of-odin-${{ matrix.label }}.zip"
+        run: Compress-Archive -Path ${{ matrix.bin }}, shaders -DestinationPath "crypt-of-odin-${{ matrix.label }}.zip"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v7

@@ -28,14 +28,15 @@ OBJ=$OUT_DIR/game.wasm.o
 
 files="$OBJ $ODIN_PATH/vendor/raylib/wasm/libraylib.web.a"
 
-# The game reads assets/ and shaders/ at runtime; --preload-file
-# bundles both into index.data, served alongside the wasm.
+# The game reads shaders/ at runtime; --preload-file bundles it into
+# index.data, served alongside the wasm. The art is typed in (art.odin)
+# and built at load time, so there is no asset pack left to preload.
 # No ALLOW_MEMORY_GROWTH: a growable heap is a resizable ArrayBuffer,
 # and Chrome rejects views of those in texImage2D. Fixed 64 MB instead.
 flags="-sEXPORTED_RUNTIME_METHODS=['HEAPF32'] -sUSE_GLFW=3 -sWASM_BIGINT
        -sWARN_ON_UNDEFINED_SYMBOLS=0 -sINITIAL_MEMORY=64MB -sASSERTIONS
        --shell-file src/main_web/index_template.html
-       --preload-file assets --preload-file shaders"
+       --preload-file shaders"
 
 emcc -o $OUT_DIR/index.html $files $flags
 

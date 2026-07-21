@@ -36,4 +36,7 @@ by itself after a second):
 | `src/camera.odin` | changed | `compute_viewport`: on the web the scale divides by 1 — the web build runs without the HIGHDPI flag (see game_init), so screen units already are device pixels. raylib's web HIGHDPI bookkeeping is a trap: its draw-scale matrix is set only by a browser zoom-change event (fresh loads never have it), and `EndMode2D` applies it even inside render textures (the HUD doubles when it fires). The fix is refusing the flag, not compensating for it |
 | `src/shaders.odin` | unchanged | the GLSL 100 dialect and the compile-time switch have been waiting since Chapter 15 |
 | GitHub workflows | deferred | the Nim book shipped release/pages workflows here; the Odin equivalents are pending the prose pass |
+| `src/art.odin` | new | the game's art, typed in: one string grid per sprite, keyed to a palette (`ART`, `render_art`, `build_atlas`) |
+| `src/resources.odin` | changed | `build_atlas(ART)` replaces `load_atlas`; the atlas is rendered from the typed strips at load time instead of read from an image-and-index pack on disk |
+| `assets/` | removed | the PNG art pack from earlier chapters is retired from this chapter; every sprite it supplied now lives in `art.odin` |
 | everything else | unchanged | |

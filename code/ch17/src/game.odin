@@ -24,7 +24,6 @@ FLOOR_COUNT :: 3 // the run: two floors of dungeon, then the throne
 ATTACK_COOLDOWN_TIME :: 0.35
 BACKGROUND_COLOR :: rl.Color{24, 20, 37, 255}
 RING_COLOR :: rl.Color{232, 193, 112, 255}
-ATLAS_DIR :: "assets/0x72_DungeonTilesetII_v1.7/"
 
 // Build with -define:AUTOSTART=true and the menu presses SPACE by
 // itself after a second: the chapter 8 lesson (a game you can drive
@@ -85,7 +84,8 @@ spawn_enemy :: proc(w: ^World, atlas: ^Atlas, pos: rl.Vector2,
 	// builds.
 	e := spawn(w, {.Position, .Velocity, .Sprite, .Actor, .Collider,
 	               .Bounce, .Health, .Ai, .Contact_Damage})
-	w.sprites[e.idx] = make_anim_sprite(atlas, stats.idle_anim, SCALE)
+	w.sprites[e.idx] = make_anim_sprite(atlas, stats.idle_anim,
+	                                   SCALE * stats.scale)
 	w.actors[e.idx] = {idle_anim = stats.idle_anim,
 	                   run_anim = stats.run_anim}
 	w.colliders[e.idx] = feet_collider(w.sprites[e.idx], .Enemy,
@@ -106,7 +106,8 @@ spawn_boss :: proc(w: ^World, atlas: ^Atlas, pos: rl.Vector2) -> Entity {
 	// boss system only layers phases on top.
 	e := spawn(w, {.Position, .Velocity, .Sprite, .Actor, .Collider,
 	               .Health, .Ai, .Contact_Damage, .Boss})
-	w.sprites[e.idx] = make_anim_sprite(atlas, WARDEN.idle_anim, SCALE)
+	w.sprites[e.idx] = make_anim_sprite(atlas, WARDEN.idle_anim,
+	                                   SCALE * WARDEN.scale)
 	w.actors[e.idx] = {idle_anim = WARDEN.idle_anim,
 	                   run_anim = WARDEN.run_anim}
 	w.colliders[e.idx] = feet_collider(w.sprites[e.idx], .Enemy,
@@ -234,7 +235,10 @@ populate_floor :: proc(w: ^World, d: Dungeon, atlas: ^Atlas,
 		}
 	}
 	if final {
-		spawn_boss(w, atlas, room_center(d, d.stairs_room) - {32, 36})
+		// The centering offset is half the boss's drawn size: 16px art
+		// at WARDEN.scale (2) * SCALE (2) draws 64x64, so {32, 32}
+		// (the old 32x36 compensated the old pack's taller sprite).
+		spawn_boss(w, atlas, room_center(d, d.stairs_room) - {32, 32})
 	}
 	spawn_key(w, atlas, random_pos_in(d, d.key_room))
 	return knight
@@ -321,8 +325,7 @@ game_init :: proc() {
 	}
 
 	g.target = rl.LoadRenderTexture(SCREEN_WIDTH, SCREEN_HEIGHT)
-	g.atlas = load_atlas(ATLAS_DIR + "0x72_DungeonTilesetII_v1.7.png",
-	                     ATLAS_DIR + "tile_list_v1.7")
+	g.atlas = build_atlas(ART)
 	g.skin = make_skin(&g.atlas)
 	g.fx = load_fx(&g.atlas, SCREEN_WIDTH, SCREEN_HEIGHT)
 	g.bank = load_audio_bank()
@@ -436,7 +439,9 @@ game_update :: proc() {
 		boss_pos: rl.Vector2
 		boss_idx := find_boss(&g.run.world)
 		if boss_idx >= 0 {
-			boss_pos = g.run.world.positions[boss_idx] + {32, 36}
+			boss_pos = g.run.world.positions[boss_idx] +
+				rl.Vector2{sprite_width(g.run.world.sprites[boss_idx]) / 2,
+				           sprite_height(g.run.world.sprites[boss_idx]) / 2}
 			was_calm := g.run.world.bosses[boss_idx].phase == .Stalk
 			for spot in boss_system(&g.run.world, dt) {
 				// Cap the court: only creatures in the throne room

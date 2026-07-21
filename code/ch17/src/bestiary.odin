@@ -15,21 +15,26 @@ Enemy_Stats :: struct {
 	hp:        i32,
 	speed:     f32, // chase speed, px/s
 	aggro:     f32, // start chasing inside this range, px
+	scale:     f32, // multiplies SCALE at spawn; 2 for ogre and the boss
 }
 
 // The boss's minion of choice: fast, frail. A compile-time constant
 // so the @(rodata) table below can include it by name.
-IMP :: Enemy_Stats{"imp", "imp_idle_anim", "imp_run_anim", 1, 95, 140}
+IMP :: Enemy_Stats{"imp", "imp_idle_anim", "imp_run_anim", 1, 95, 140, 1}
+GOBLIN :: Enemy_Stats{"goblin", "goblin_idle_anim", "goblin_run_anim", 2, 85, 150, 1}
+SKELET :: Enemy_Stats{"skelet", "skelet_idle_anim", "skelet_run_anim", 2, 70, 170, 1}
+CHORT :: Enemy_Stats{"chort", "chort_idle_anim", "chort_run_anim", 3, 80, 160, 1}
+OGRE :: Enemy_Stats{"ogre", "ogre_idle_anim", "ogre_run_anim", 5, 45, 190, 2}
 
 // @(rodata) puts these tables in read-only memory: any accidental
 // write should fault, not silently rebalance the game.
 @(rodata)
 ENEMY_KINDS := [5]Enemy_Stats{
-	{"goblin", "goblin_idle_anim", "goblin_run_anim", 2, 85, 150},
-	{"skelet", "skelet_idle_anim", "skelet_run_anim", 2, 70, 170},
+	GOBLIN,
+	SKELET,
 	IMP,
-	{"chort", "chort_idle_anim", "chort_run_anim", 3, 80, 160},
-	{"ogre", "ogre_idle_anim", "ogre_run_anim", 5, 45, 190},
+	CHORT,
+	OGRE,
 }
 
 // The boss. Slow and huge; the fight's pressure comes from the locked
@@ -39,7 +44,7 @@ ENEMY_KINDS := [5]Enemy_Stats{
 @(rodata)
 WARDEN := Enemy_Stats{
 	"big_demon", "big_demon_idle_anim", "big_demon_run_anim",
-	20, 55, 1000,
+	20, 55, 1000, 2,
 }
 
 scaled :: proc(s: Enemy_Stats, floor_num: int) -> Enemy_Stats {

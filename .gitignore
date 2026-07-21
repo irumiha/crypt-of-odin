@@ -4,6 +4,9 @@ crypt.exe
 tour
 build/
 
+# Rendered by tools/preview_art; regenerate, don't commit.
+atlas_preview.png
+
 # Editor droppings. Readers clone this repo and open it in whatever they
 # like; none of that belongs in it. A stray .idea/ turned up in the Nim
 # repo, which is how this got noticed.

@@ -42,6 +42,16 @@ grid_decodes_to_pixels :: proc(t: ^testing.T) {
 }
 
 @(test)
+game_art_is_well_formed :: proc(t: ^testing.T) {
+	// Decoding asserts on any bad row width or unknown palette
+	// character, so "it renders" is the whole test.
+	img := crypt.render_art(crypt.ART)
+	defer rl.UnloadImage(img)
+	testing.expect(t, img.height ==
+	               i32(len(crypt.ART) * crypt.SPRITE_SIZE))
+}
+
+@(test)
 strip_lays_frames_side_by_side :: proc(t: ^testing.T) {
 	// A 2-frame strip: frame 0 all ink, frame 1 all gold. The image
 	// is 32 wide and the pixel at x=16 belongs to frame 1.

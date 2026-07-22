@@ -47,6 +47,21 @@ visible_rows :: proc() -> int {
 	return (WIN_H - 16) / LIST_ROW_H
 }
 
+canvas_cell :: proc(ed: ^Editor) -> (x, y: int, ok: bool) {
+	e := &ed.edits[ed.sel]
+	m := rl.GetMousePosition()
+	if m.x < CANVAS_X || m.y < CANVAS_Y do return
+	x = (int(m.x) - CANVAS_X) / ZOOM
+	y = (int(m.y) - CANVAS_Y) / ZOOM
+	ok = x < e.frames * crypt.SPRITE_SIZE && y < crypt.SPRITE_SIZE
+	return
+}
+
+push_undo :: proc(e: ^Strip_Edit) {
+	if len(e.undo) >= UNDO_CAP do ordered_remove(&e.undo, 0)
+	append(&e.undo, e.grid)
+}
+
 Grid :: [crypt.SPRITE_SIZE][MAX_W]u8
 
 Strip_Edit :: struct {
@@ -183,6 +198,22 @@ update :: proc(ed: ^Editor) {
 			}
 		}
 	}
+
+	// Paint, eyedrop, undo.
+	e := &ed.edits[ed.sel]
+	if rl.IsMouseButtonPressed(.LEFT) {
+		if _, _, ok := canvas_cell(ed); ok do push_undo(e) // one snapshot per stroke
+	}
+	if rl.IsMouseButtonDown(.LEFT) {
+		if x, y, ok := canvas_cell(ed); ok do e.grid[y][x] = PAL[ed.color].ch
+	}
+	if rl.IsMouseButtonPressed(.RIGHT) {
+		if x, y, ok := canvas_cell(ed); ok {
+			for p, i in PAL do if p.ch == e.grid[y][x] do ed.color = i
+		}
+	}
+	ctrl := rl.IsKeyDown(.LEFT_CONTROL) || rl.IsKeyDown(.RIGHT_CONTROL)
+	if ctrl && rl.IsKeyPressed(.Z) && len(e.undo) > 0 do e.grid = pop(&e.undo)
 }
 
 main :: proc() {

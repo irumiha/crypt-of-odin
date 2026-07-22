@@ -172,6 +172,11 @@ draw_canvas :: proc(ed: ^Editor) {
 		py := i32(CANVAS_Y + y * ZOOM)
 		rl.DrawLine(CANVAS_X, py, i32(CANVAS_X + w * ZOOM), py, gc)
 	}
+	// A black separator between animation frames.
+	for f in 1 ..< e.frames {
+		px := i32(CANVAS_X + f * crypt.SPRITE_SIZE * ZOOM)
+		rl.DrawRectangle(px - 1, CANVAS_Y, 2, crypt.SPRITE_SIZE * ZOOM, rl.BLACK)
+	}
 }
 
 draw_palette :: proc(ed: ^Editor) {

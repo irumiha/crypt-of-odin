@@ -147,6 +147,16 @@ draw_canvas :: proc(ed: ^Editor) {
 			ch := e.grid[y][x]
 			if ch == '.' do draw_checker(px, py, ZOOM)
 			else do rl.DrawRectangle(px, py, ZOOM, ZOOM, crypt.palette_color(ch))
+			// Onion skin: ghost frame n-1 where frame n is transparent
+			// (where n is opaque the ghost would be hidden anyway).
+			if ed.onion && x >= crypt.SPRITE_SIZE && ch == '.' {
+				ghost := e.grid[y][x - crypt.SPRITE_SIZE]
+				if ghost != '.' {
+					c := crypt.palette_color(ghost)
+					c.a = 90 // ~35%
+					rl.DrawRectangle(px, py, ZOOM, ZOOM, c)
+				}
+			}
 		}
 	}
 	gc := rl.Color{255, 255, 255, 28}
@@ -169,6 +179,22 @@ draw_palette :: proc(ed: ^Editor) {
 		if i == ed.color do rl.DrawRectangleLines(px - 2, py - 2, 44, 44, rl.RAYWHITE)
 		rl.DrawText(fmt.ctprintf("%c", rune(p.ch)), px + 16, py + 44, 12, rl.LIGHTGRAY)
 	}
+}
+
+draw_preview :: proc(ed: ^Editor) {
+	e := &ed.edits[ed.sel]
+	frame := int(ed.anim_t) % e.frames
+	x0 := frame * crypt.SPRITE_SIZE
+	for y in 0 ..< crypt.SPRITE_SIZE {
+		for x in 0 ..< crypt.SPRITE_SIZE {
+			px := i32(PREVIEW_X + x * 4)
+			py := i32(PREVIEW_Y + y * 4)
+			ch := e.grid[y][x0 + x]
+			if ch == '.' do draw_checker(px, py, 4)
+			else do rl.DrawRectangle(px, py, 4, 4, crypt.palette_color(ch))
+		}
+	}
+	rl.DrawText(fmt.ctprintf("%.0f fps", ed.fps), PREVIEW_X + 70, PREVIEW_Y + 24, 12, rl.LIGHTGRAY)
 }
 
 update :: proc(ed: ^Editor) {
@@ -214,6 +240,36 @@ update :: proc(ed: ^Editor) {
 	}
 	ctrl := rl.IsKeyDown(.LEFT_CONTROL) || rl.IsKeyDown(.RIGHT_CONTROL)
 	if ctrl && rl.IsKeyPressed(.Z) && len(e.undo) > 0 do e.grid = pop(&e.undo)
+
+	// Animation preview clock and speed.
+	if e.frames > 1 {
+		ed.anim_t += rl.GetFrameTime() * ed.fps
+		if ed.anim_t >= f32(e.frames) do ed.anim_t -= f32(e.frames)
+	}
+	if rl.IsKeyPressed(.LEFT_BRACKET) do ed.fps = max(1, ed.fps / 2)
+	if rl.IsKeyPressed(.RIGHT_BRACKET) do ed.fps = min(60, ed.fps * 2)
+
+	if rl.IsKeyPressed(.O) do ed.onion = !ed.onion
+
+	// E: export the selected strip (clipboard + stdout).
+	if rl.IsKeyPressed(.E) {
+		lit := export_literal(e, context.temp_allocator)
+		rl.SetClipboardText(strings.clone_to_cstring(lit, context.temp_allocator))
+		fmt.print(lit)
+	}
+
+	// N: clone the selected strip as scratch_N and select it.
+	if rl.IsKeyPressed(.N) {
+		ed.scratch_n += 1
+		clone := Strip_Edit{
+			name   = fmt.aprintf("scratch_%d", ed.scratch_n),
+			frames = e.frames,
+			grid   = e.grid,
+			orig   = e.grid,
+		}
+		append(&ed.edits, clone)
+		ed.sel = len(ed.edits) - 1
+	}
 }
 
 main :: proc() {
@@ -236,6 +292,7 @@ main :: proc() {
 		draw_sidebar(&ed)
 		draw_canvas(&ed)
 		draw_palette(&ed)
+		draw_preview(&ed)
 		rl.EndDrawing()
 		frames_drawn += 1
 		if shot != "" && frames_drawn == 60 {

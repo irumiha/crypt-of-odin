@@ -47,8 +47,9 @@ main :: proc() {
 	}
 	coin := make_anim_sprite(&atlas, "coin_anim")
 
-	// Loading borrowed the temp allocator for split-up lines and tile
-	// names; hand it all back in one go before the loop starts.
+	// Loading borrowed the temp allocator for animation frame lookups
+	// and floor tile names; hand it all back in one go before the loop
+	// starts.
 	free_all(context.temp_allocator)
 
 	for !rl.WindowShouldClose() {

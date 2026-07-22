@@ -89,7 +89,7 @@ spawn_boss :: proc(w: ^World, atlas: ^Atlas, pos: rl.Vector2) -> Entity {
 
 spawn_ring :: proc(w: ^World, pos: rl.Vector2) {
 	// The win condition, as an entity: position, collider, pickup, and
-	// no sprite at all. The art pack has no ring, and it shouldn't:
+	// no sprite at all. Nobody drew a ring sprite, and nobody should:
 	// this one has been ours since Chapter 1, and the draw pass renders
 	// it with the same primitives the title screen uses.
 	e := spawn(w, {.Position, .Collider, .Pickup})

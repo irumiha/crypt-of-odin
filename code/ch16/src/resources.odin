@@ -48,7 +48,7 @@ atlas_rect :: proc(atlas: ^Atlas, name: string) -> rl.Rectangle {
 
 atlas_frames :: proc(atlas: ^Atlas, name: string) -> []rl.Rectangle {
 	// Collects name_f0, name_f1, ... into an animation's frame list,
-	// following the art pack's frame-naming convention. Built once
+	// following art.odin's own frame-naming convention. Built once
 	// per name, then served from the cache.
 	if cached, ok := atlas.anims[name]; ok {
 		return cached

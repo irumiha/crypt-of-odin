@@ -22,7 +22,7 @@ Anim_Sprite :: struct {
 make_anim_sprite :: proc(atlas: ^Atlas, name: string,
                          scale: f32 = 4, fps: f32 = 8) -> Anim_Sprite {
 	// An animation from the atlas by base name, e.g. "knight_m_idle_anim"
-	// collects knight_m_idle_anim_f0..f3. fps is animation speed, not
+	// collects knight_m_idle_anim_f0..f2. fps is animation speed, not
 	// render speed; the game still draws at 60.
 	return {anim = name, frames = atlas_frames(atlas, name),
 	        secs_per_frame = 1.0 / fps, scale = scale}

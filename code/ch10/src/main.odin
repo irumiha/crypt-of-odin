@@ -2,7 +2,7 @@
 // Isaac-style grid of screen-sized rooms built from a seed, the
 // camera locks to the current room and pans on transitions, the
 // stairs down hide behind gold-sealed doors, and a flask of solvent
-// (this pack has no key sprite; improvise) dissolves them. Stairs
+// (nobody drew a key sprite; improvise) dissolves them. Stairs
 // descend to a fresh, slightly meaner floor.
 
 package crypt

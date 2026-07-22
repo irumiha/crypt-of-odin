@@ -24,6 +24,7 @@ ZOOM :: 20
 PAL_Y :: WIN_H - 64
 PREVIEW_X :: 1140
 PREVIEW_Y :: 8
+HELP_Y :: CANVAS_Y + crypt.SPRITE_SIZE * ZOOM + 28
 
 // Palette selection keys, in PALETTE order.
 PAL_KEYS :: [?]rl.KeyboardKey{
@@ -200,6 +201,34 @@ draw_preview :: proc(ed: ^Editor) {
 	rl.DrawText(fmt.ctprintf("%.0f fps", ed.fps), PREVIEW_X + 70, PREVIEW_Y + 24, 20, rl.LIGHTGRAY)
 }
 
+Help_Line :: struct {
+	key, action: cstring,
+}
+
+// The default font is not monospace, so the key and action are drawn
+// as two columns instead of space-padding one string.
+HELP :: [?]Help_Line{
+	{"up/down, click", "select strip"},
+	{"1-9 0 - = bksp", "palette color"},
+	{"left drag", "paint"},
+	{"right click", "eyedrop"},
+	{"ctrl+z", "undo"},
+	{"o", "onion skin"},
+	{"[ ]", "preview speed"},
+	{"n", "clone to scratch"},
+	{"e", "export (clipboard + stdout)"},
+}
+
+draw_help :: proc() {
+	key_col := rl.Color{170, 170, 182, 255}
+	act_col := rl.Color{110, 110, 122, 255}
+	for h, i in HELP {
+		y := i32(HELP_Y + i * 24)
+		rl.DrawText(h.key, CANVAS_X, y, 20, key_col)
+		rl.DrawText(h.action, CANVAS_X + 220, y, 20, act_col)
+	}
+}
+
 update :: proc(ed: ^Editor) {
 	m := ed.mouse
 
@@ -311,6 +340,7 @@ main :: proc() {
 		draw_canvas(&ed)
 		draw_palette(&ed)
 		draw_preview(&ed)
+		draw_help()
 		rl.EndTextureMode()
 
 		// Blit, integer-scaled, letterboxed — same presentation as the game.

@@ -15,8 +15,8 @@ SCALE :: 2 // 16px art, 32px on screen
 TILE_SIZE :: 16 * SCALE
 BACKGROUND_COLOR :: rl.Color{24, 20, 37, 255}
 // Every name here must exist in the atlas as <name>_idle_anim; a bad
-// one fails loudly at spawn ("ice_zombie" taught us that; the pack
-// names its animation ice_zombie_anim, with no idle variant).
+// one fails loudly at spawn, instead of drawing nothing and hoping
+// nobody notices.
 // @(rodata) because a `::` constant has no address to index at runtime.
 @(rodata)
 CRITTER_NAMES := [?]string{"goblin", "skelet", "imp", "chort", "ogre"}

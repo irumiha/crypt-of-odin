@@ -237,7 +237,7 @@ populate_floor :: proc(w: ^World, d: Dungeon, atlas: ^Atlas,
 	if final {
 		// The centering offset is half the boss's drawn size: 16px art
 		// at WARDEN.scale (2) * SCALE (2) draws 64x64, so {32, 32}
-		// (the old 32x36 compensated the old pack's taller sprite).
+		// (an earlier, non-square boss sprite needed 32x36 here).
 		spawn_boss(w, atlas, room_center(d, d.stairs_room) - {32, 32})
 	}
 	spawn_key(w, atlas, random_pos_in(d, d.key_room))

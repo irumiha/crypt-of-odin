@@ -252,35 +252,55 @@ hover_system :: proc(w: ^World, point: rl.Vector2) {
 	}
 }
 
+Draw_Layer :: enum {
+	// Back-to-front draw order: death decals under dropped loot under
+	// the living.
+	Decal,
+	Loot,
+	Actor,
+}
+
+sprite_layer :: proc(w: ^World, i: i32) -> Draw_Layer {
+	// What an entity is decides where it draws: the living — and the
+	// sword they swing — on top, loot beneath them, and anything else
+	// (the skull decals) on the floor where it belongs.
+	if has(w, i, .Actor) || has(w, i, .Contact_Damage) do return .Actor
+	if has(w, i, .Pickup) do return .Loot
+	return .Decal
+}
+
 draw_system :: proc(w: ^World, atlas: ^Atlas, fx: Fx) {
-	// Draws every entity that has a position and a sprite, in slot
-	// order. Two feel effects live here: anything stunned flashes red,
-	// and the player blinks during invulnerability (the classic "you
-	// can't be hurt right now" signal, running at 10 Hz). The hovered
-	// pickup draws through the outline shader; everything else takes
-	// the ordinary path.
+	// Draws every entity that has a position and a sprite, one layer
+	// at a time (slot order within a layer). Two feel effects live
+	// here: anything stunned flashes red, and the player blinks during
+	// invulnerability (the classic "you can't be hurt right now"
+	// signal, running at 10 Hz). The hovered pickup draws through the
+	// outline shader; everything else takes the ordinary path.
 	// Reads: Position, Sprite, Health, hovered. Writes: nothing (only
 	// the screen).
-	for i in query(w, {.Position, .Sprite}) {
-		tint := rl.WHITE
-		visible := true
-		if has(w, i, .Health) {
-			if w.healths[i].stun > 0 {
-				tint = {255, 90, 90, 255}
+	for layer in Draw_Layer {
+		for i in query(w, {.Position, .Sprite}) {
+			if sprite_layer(w, i) != layer do continue
+			tint := rl.WHITE
+			visible := true
+			if has(w, i, .Health) {
+				if w.healths[i].stun > 0 {
+					tint = {255, 90, 90, 255}
+				}
+				if has(w, i, .Player) && w.healths[i].invuln > 0 &&
+				   int(w.healths[i].invuln * 10) % 2 == 1 {
+					visible = false
+				}
 			}
-			if has(w, i, .Player) && w.healths[i].invuln > 0 &&
-			   int(w.healths[i].invuln * 10) % 2 == 1 {
-				visible = false
-			}
-		}
-		if visible {
-			if i == w.hovered {
-				set_outline_region(fx, atlas, src_rect(w.sprites[i]))
-				rl.BeginShaderMode(fx.outline)
-				sprite_draw(w.sprites[i], atlas, w.positions[i], tint)
-				rl.EndShaderMode()
-			} else {
-				sprite_draw(w.sprites[i], atlas, w.positions[i], tint)
+			if visible {
+				if i == w.hovered {
+					set_outline_region(fx, atlas, src_rect(w.sprites[i]))
+					rl.BeginShaderMode(fx.outline)
+					sprite_draw(w.sprites[i], atlas, w.positions[i], tint)
+					rl.EndShaderMode()
+				} else {
+					sprite_draw(w.sprites[i], atlas, w.positions[i], tint)
+				}
 			}
 		}
 	}

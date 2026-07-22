@@ -231,11 +231,31 @@ lifetime_system :: proc(w: ^World, dt: f32) {
 	}
 }
 
+Draw_Layer :: enum {
+	// Back-to-front draw order: death decals under dropped loot under
+	// the living.
+	Decal,
+	Loot,
+	Actor,
+}
+
+sprite_layer :: proc(w: ^World, i: i32) -> Draw_Layer {
+	// What an entity is decides where it draws: the living — and the
+	// sword they swing — on top, loot beneath them, and anything else
+	// (the skull decals) on the floor where it belongs.
+	if has(w, i, .Actor) || has(w, i, .Contact_Damage) do return .Actor
+	if has(w, i, .Pickup) do return .Loot
+	return .Decal
+}
+
 draw_system :: proc(w: ^World, atlas: ^Atlas) {
-	// Draws every entity that has a position and a sprite, in slot
-	// order (draw-order control comes with later chapters).
+	// Draws every entity that has a position and a sprite, one layer
+	// at a time (slot order within a layer).
 	// Reads: Position, Sprite. Writes: nothing (only the screen).
-	for i in query(w, {.Position, .Sprite}) {
-		sprite_draw(w.sprites[i], atlas, w.positions[i])
+	for layer in Draw_Layer {
+		for i in query(w, {.Position, .Sprite}) {
+			if sprite_layer(w, i) != layer do continue
+			sprite_draw(w.sprites[i], atlas, w.positions[i])
+		}
 	}
 }

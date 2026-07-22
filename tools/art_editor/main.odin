@@ -41,6 +41,8 @@ Editor :: struct {
 	fps:       f32, // animation preview speed
 	anim_t:    f32, // preview clock, in (fractional) frames
 	scratch_n: int, // scratch strips created so far
+	painting:  bool, // a stroke is in progress (undo snapshot already pushed)
+	last_sel:  int,  // to cancel the stroke when the selection changes
 }
 
 visible_rows :: proc() -> int {
@@ -225,13 +227,23 @@ update :: proc(ed: ^Editor) {
 		}
 	}
 
-	// Paint, eyedrop, undo.
+	// Paint, eyedrop, undo. The snapshot is pushed lazily on the first
+	// in-canvas paint of a stroke, so strokes that begin outside the
+	// canvas still get one; a strip switch cancels the stroke.
 	e := &ed.edits[ed.sel]
-	if rl.IsMouseButtonPressed(.LEFT) {
-		if _, _, ok := canvas_cell(ed); ok do push_undo(e) // one snapshot per stroke
+	if ed.sel != ed.last_sel {
+		ed.painting = false
+		ed.last_sel = ed.sel
 	}
+	if rl.IsMouseButtonReleased(.LEFT) do ed.painting = false
 	if rl.IsMouseButtonDown(.LEFT) {
-		if x, y, ok := canvas_cell(ed); ok do e.grid[y][x] = PAL[ed.color].ch
+		if x, y, ok := canvas_cell(ed); ok {
+			if !ed.painting {
+				push_undo(e) // one snapshot per stroke
+				ed.painting = true
+			}
+			e.grid[y][x] = PAL[ed.color].ch
+		}
 	}
 	if rl.IsMouseButtonPressed(.RIGHT) {
 		if x, y, ok := canvas_cell(ed); ok {

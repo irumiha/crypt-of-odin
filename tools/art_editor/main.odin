@@ -43,6 +43,7 @@ Editor :: struct {
 	scratch_n: int, // scratch strips created so far
 	painting:  bool, // a stroke is in progress (undo snapshot already pushed)
 	last_sel:  int,  // to cancel the stroke when the selection changes
+	mouse:     rl.Vector2, // in logical WIN_W×WIN_H coordinates, set each frame
 }
 
 visible_rows :: proc() -> int {
@@ -51,7 +52,7 @@ visible_rows :: proc() -> int {
 
 canvas_cell :: proc(ed: ^Editor) -> (x, y: int, ok: bool) {
 	e := &ed.edits[ed.sel]
-	m := rl.GetMousePosition()
+	m := ed.mouse
 	if m.x < CANVAS_X || m.y < CANVAS_Y do return
 	x = (int(m.x) - CANVAS_X) / ZOOM
 	y = (int(m.y) - CANVAS_Y) / ZOOM
@@ -200,7 +201,7 @@ draw_preview :: proc(ed: ^Editor) {
 }
 
 update :: proc(ed: ^Editor) {
-	m := rl.GetMousePosition()
+	m := ed.mouse
 
 	// Strip selection: arrows, sidebar click, wheel scroll.
 	if rl.IsKeyPressed(.UP) do ed.sel = max(0, ed.sel - 1)
@@ -294,18 +295,32 @@ main :: proc() {
 	shot := os.get_env_alloc("ART_EDITOR_SHOT", context.allocator)
 
 	rl.SetTraceLogLevel(.WARNING)
+	rl.SetConfigFlags({.WINDOW_HIGHDPI, .WINDOW_RESIZABLE})
 	rl.InitWindow(WIN_W, WIN_H, "crypt art editor")
 	rl.SetTargetFPS(60)
+	target := rl.LoadRenderTexture(WIN_W, WIN_H)
 	frames_drawn := 0
 	for !rl.WindowShouldClose() {
+		vp := crypt.compute_viewport(WIN_W, WIN_H)
+		ed.mouse = crypt.mouse_logical(vp)
 		update(&ed)
-		rl.BeginDrawing()
+
+		rl.BeginTextureMode(target)
 		rl.ClearBackground({24, 24, 28, 255})
 		draw_sidebar(&ed)
 		draw_canvas(&ed)
 		draw_palette(&ed)
 		draw_preview(&ed)
+		rl.EndTextureMode()
+
+		// Blit, integer-scaled, letterboxed — same presentation as the game.
+		rl.BeginDrawing()
+		rl.ClearBackground(rl.BLACK)
+		rl.DrawTexturePro(target.texture,
+			{0, 0, f32(WIN_W), -f32(WIN_H)},
+			vp.dest, {0, 0}, 0, rl.WHITE)
 		rl.EndDrawing()
+
 		frames_drawn += 1
 		if shot != "" && frames_drawn == 60 {
 			// rl.TakeScreenshot always joins the given name onto
@@ -319,5 +334,6 @@ main :: proc() {
 		}
 		free_all(context.temp_allocator)
 	}
+	rl.UnloadRenderTexture(target)
 	rl.CloseWindow()
 }

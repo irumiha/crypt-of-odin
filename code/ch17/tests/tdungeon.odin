@@ -86,7 +86,9 @@ room_lookup_inverts_room_centers :: proc(t: ^testing.T) {
 }
 
 @(test)
-stairs_start_sealed_and_the_key_dissolves_exactly_the_seals :: proc(t: ^testing.T) {
+stairs_start_sealed_and_the_key_dissolves_exactly_the_seals :: proc(
+	t: ^testing.T,
+) {
 	d := crypt.generate(99, 1)
 	defer crypt.destroy_dungeon(&d)
 	testing.expect(t, crypt.is_locked(d))

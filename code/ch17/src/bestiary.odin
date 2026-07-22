@@ -21,9 +21,15 @@ Enemy_Stats :: struct {
 // The boss's minion of choice: fast, frail. A compile-time constant
 // so the @(rodata) table below can include it by name.
 IMP :: Enemy_Stats{"imp", "imp_idle_anim", "imp_run_anim", 1, 95, 140, 1}
-GOBLIN :: Enemy_Stats{"goblin", "goblin_idle_anim", "goblin_run_anim", 2, 85, 150, 1}
-SKELET :: Enemy_Stats{"skelet", "skelet_idle_anim", "skelet_run_anim", 2, 70, 170, 1}
-CHORT :: Enemy_Stats{"chort", "chort_idle_anim", "chort_run_anim", 3, 80, 160, 1}
+GOBLIN :: Enemy_Stats{
+	"goblin", "goblin_idle_anim", "goblin_run_anim", 2, 85, 150, 1,
+}
+SKELET :: Enemy_Stats{
+	"skelet", "skelet_idle_anim", "skelet_run_anim", 2, 70, 170, 1,
+}
+CHORT :: Enemy_Stats{
+	"chort", "chort_idle_anim", "chort_run_anim", 3, 80, 160, 1,
+}
 OGRE :: Enemy_Stats{"ogre", "ogre_idle_anim", "ogre_run_anim", 5, 45, 190, 2}
 
 // @(rodata) puts these tables in read-only memory: any accidental

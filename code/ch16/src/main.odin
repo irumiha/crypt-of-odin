@@ -104,12 +104,18 @@ spawn_loot :: proc(w: ^World, atlas: ^Atlas, pos: rl.Vector2,
 	// the crypt keeps a tidy floor.
 	e := spawn(w, {.Position, .Sprite, .Lifetime, .Collider, .Pickup})
 	switch kind {
-	case .Coin:   w.sprites[e.idx] = make_anim_sprite(atlas, "coin_anim", SCALE)
-	case .Heart:  w.sprites[e.idx] = make_static_sprite(atlas, "ui_heart_full", SCALE)
-	case .Max_Hp: w.sprites[e.idx] = make_static_sprite(atlas, "flask_big_blue", SCALE)
-	case .Power:  w.sprites[e.idx] = make_static_sprite(atlas, "flask_big_green", SCALE)
-	case .Key:    w.sprites[e.idx] = make_static_sprite(atlas, "flask_big_yellow", SCALE)
-	case .Ring:  panic("the ring spawns via spawn_ring")
+	case .Coin:
+		w.sprites[e.idx] = make_anim_sprite(atlas, "coin_anim", SCALE)
+	case .Heart:
+		w.sprites[e.idx] = make_static_sprite(atlas, "ui_heart_full", SCALE)
+	case .Max_Hp:
+		w.sprites[e.idx] = make_static_sprite(atlas, "flask_big_blue", SCALE)
+	case .Power:
+		w.sprites[e.idx] = make_static_sprite(atlas, "flask_big_green", SCALE)
+	case .Key:
+		w.sprites[e.idx] = make_static_sprite(atlas, "flask_big_yellow", SCALE)
+	case .Ring:
+		panic("the ring spawns via spawn_ring")
 	}
 	w.colliders[e.idx] = {size = {sprite_width(w.sprites[e.idx]),
 	                              sprite_height(w.sprites[e.idx])},

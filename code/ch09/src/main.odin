@@ -77,7 +77,8 @@ spawn_enemy :: proc(w: ^World, atlas: ^Atlas, m: Tilemap) -> Entity {
 	e := spawn(w, {.Position, .Velocity, .Sprite, .Actor,
 	               .Collider, .Bounce, .Health, .Ai,
 	               .Contact_Damage})
-	w.sprites[e.idx] = make_anim_sprite(atlas, stats.idle_anim, SCALE * stats.scale)
+	w.sprites[e.idx] = make_anim_sprite(atlas, stats.idle_anim,
+	                                    SCALE * stats.scale)
 	w.actors[e.idx] = {idle_anim = stats.idle_anim,
 	                   run_anim  = stats.run_anim}
 	w.colliders[e.idx] = feet_collider(w.sprites[e.idx], .Enemy,

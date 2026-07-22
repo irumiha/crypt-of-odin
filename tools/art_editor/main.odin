@@ -16,9 +16,9 @@ UNDO_CAP :: 100
 
 WIN_W :: 1280
 WIN_H :: 720
-SIDEBAR_W :: 220
-LIST_ROW_H :: 20
-CANVAS_X :: 240
+SIDEBAR_W :: 280
+LIST_ROW_H :: 24
+CANVAS_X :: 300
 CANVAS_Y :: 80
 ZOOM :: 20
 PAL_Y :: WIN_H - 64
@@ -136,7 +136,7 @@ draw_sidebar :: proc(ed: ^Editor) {
 		col := rl.LIGHTGRAY
 		if i == ed.sel do col = rl.GOLD
 		label := fmt.ctprintf("%s%s", e.grid != e.orig ? "*" : " ", e.name)
-		rl.DrawText(label, 8, y, 12, col)
+		rl.DrawText(label, 8, y, 20, col)
 	}
 }
 
@@ -180,7 +180,7 @@ draw_palette :: proc(ed: ^Editor) {
 		if p.ch == '.' do draw_checker(px, py, 40)
 		else do rl.DrawRectangle(px, py, 40, 40, p.color)
 		if i == ed.color do rl.DrawRectangleLines(px - 2, py - 2, 44, 44, rl.RAYWHITE)
-		rl.DrawText(fmt.ctprintf("%c", rune(p.ch)), px + 16, py + 44, 12, rl.LIGHTGRAY)
+		rl.DrawText(fmt.ctprintf("%c", rune(p.ch)), px + 14, py + 44, 20, rl.LIGHTGRAY)
 	}
 }
 
@@ -197,7 +197,7 @@ draw_preview :: proc(ed: ^Editor) {
 			else do rl.DrawRectangle(px, py, 4, 4, crypt.palette_color(ch))
 		}
 	}
-	rl.DrawText(fmt.ctprintf("%.0f fps", ed.fps), PREVIEW_X + 70, PREVIEW_Y + 24, 12, rl.LIGHTGRAY)
+	rl.DrawText(fmt.ctprintf("%.0f fps", ed.fps), PREVIEW_X + 70, PREVIEW_Y + 24, 20, rl.LIGHTGRAY)
 }
 
 update :: proc(ed: ^Editor) {
